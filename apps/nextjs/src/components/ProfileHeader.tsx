@@ -99,7 +99,7 @@ export default function ProfileHeader({
         style={{ backgroundColor: "var(--brand-soft, #fff0f7)" }}
       >
         <motion.button
-          initial={{ opacity: 0, x: -12 }}
+          initial={{ opacity: 0, x: 18 }} // slide in from the right
           animate={{ opacity: 1, x: 0 }}
           transition={{
             delay: 0.08,

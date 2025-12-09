@@ -1,4 +1,4 @@
-import { sanityClient } from "./sanity";
+import { cachedSanityFetch } from "./sanity";
 
 type HeaderButton = {
   label: string;
@@ -67,7 +67,10 @@ export async function getHomepageContent(): Promise<{
   socialLinks?: SocialLink[];
   theme?: ThemeSettings;
 }> {
-  return sanityClient.fetch(contentQuery);
+  return cachedSanityFetch(contentQuery, {
+    tags: ["homepage-content"],
+    revalidate: 300,
+  });
 }
 
 const themeQuery = `
@@ -78,5 +81,8 @@ const themeQuery = `
 `;
 
 export async function getThemeSettings(): Promise<ThemeSettings> {
-  return sanityClient.fetch(themeQuery);
+  return cachedSanityFetch(themeQuery, {
+    tags: ["theme-settings"],
+    revalidate: 300,
+  });
 }

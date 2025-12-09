@@ -5,8 +5,6 @@ import SocialButtons from "@/components/SocialButtons";
 import Footer from "@/components/Footer";
 import { getHomepageContent } from "@/lib/queries";
 
-export const revalidate = 300; // 5 minutes
-
 export default async function Home() {
   const { profileHeader, socialLinks = [] } = await getHomepageContent();
 
