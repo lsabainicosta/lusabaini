@@ -10,11 +10,17 @@ function unauthorized() {
   );
 }
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST,GET,OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, x-revalidate-secret",
+};
+
 export async function POST(request: NextRequest) {
   if (!expectedSecret) {
     return NextResponse.json(
       { ok: false, error: "Server missing REVALIDATE_SECRET" },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 
@@ -28,13 +34,33 @@ export async function POST(request: NextRequest) {
   revalidateTag("homepage-content", "max");
   revalidateTag("theme-settings", "max");
 
-  return NextResponse.json({
-    ok: true,
-    revalidated: ["homepage-content", "theme-settings"],
-  });
+  return NextResponse.json(
+    {
+      ok: true,
+      revalidated: ["homepage-content", "theme-settings"],
+    },
+    { headers: corsHeaders }
+  );
 }
 
 export async function GET(request: NextRequest) {
   // Allow GET for simple webhook testing (e.g., curl in a browser), still protected by secret.
-  return POST(request);
+  const response = await POST(request);
+  response.headers.set(
+    "Access-Control-Allow-Origin",
+    corsHeaders["Access-Control-Allow-Origin"]
+  );
+  response.headers.set(
+    "Access-Control-Allow-Methods",
+    corsHeaders["Access-Control-Allow-Methods"]
+  );
+  response.headers.set(
+    "Access-Control-Allow-Headers",
+    corsHeaders["Access-Control-Allow-Headers"]
+  );
+  return response;
+}
+
+export async function OPTIONS() {
+  return NextResponse.json({ ok: true }, { headers: corsHeaders });
 }
