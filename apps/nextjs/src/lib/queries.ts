@@ -69,7 +69,7 @@ export async function getHomepageContent(): Promise<{
 }> {
   return cachedSanityFetch(contentQuery, {
     tags: ["homepage-content"],
-    revalidate: 3600,
+    revalidate: 12 * 60 * 60,
   });
 }
 
@@ -83,6 +83,6 @@ const themeQuery = `
 export async function getThemeSettings(): Promise<ThemeSettings> {
   return cachedSanityFetch(themeQuery, {
     tags: ["theme-settings"],
-    revalidate: 3600,
+    revalidate: 12 * 60 * 60,
   });
 }
