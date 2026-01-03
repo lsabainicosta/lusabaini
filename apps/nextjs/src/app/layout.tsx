@@ -22,8 +22,9 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Luiza Sabaini Costa",
-  description: "Portfolio and quick links to Luiza Sabaini Costa",
-  applicationName: "Luiza Sabaini Costa",
+  description:
+    "Short‑form video, strategy, and hands‑on execution to help brands grow on social. Portfolio, services, and client results by Luiza Sabaini Costa.",
+  applicationName: "Luiza Sabaini Costa — Portfolio",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [

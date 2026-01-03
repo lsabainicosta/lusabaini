@@ -4,7 +4,8 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Luiza Sabaini Costa",
     short_name: "Luiza Sabaini",
-    description: "Portfolio and quick links to Luiza Sabaini Costa",
+    description:
+      "Short‑form video, strategy, and hands‑on execution to help brands grow on social. Portfolio, services, and client results.",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",
