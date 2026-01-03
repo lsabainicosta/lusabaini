@@ -1,24 +1,35 @@
 "use server";
 
-import { getHomepageContent } from "@/lib/queries";
-import Header from "@/components/Header";
+import { getHomeSectionsContent } from "@/lib/queries";
 import Hero from "@/components/Hero";
 import BrandLogos from "@/components/BrandLogos";
 import Services from "@/components/Services";
-import Footer from "@/components/Footer";
+import ClientResults from "@/components/ClientResults";
 
 export default async function Home() {
-  const { profileHeader, socialLinks = [] } = await getHomepageContent();
+  const { clientResults, hero, brandLogos, servicesSection } =
+    await getHomeSectionsContent();
 
   return (
-    <main className="relative min-h-screen w-full overflow-x-hidden">
-      <Header />
-      <Hero />
-      <BrandLogos />
-      <Services />
-      <Footer />
-    </main>
+    <>
+      <Hero
+        headlineStart={hero?.headlineStart}
+        headlineEmphasis={hero?.headlineEmphasis}
+        headlineEnd={hero?.headlineEnd}
+        description={hero?.description}
+        primaryCta={hero?.primaryCta}
+        secondaryCta={hero?.secondaryCta}
+        carouselVideos={hero?.carouselVideos}
+      />
+      <BrandLogos introText={brandLogos?.introText} logos={brandLogos?.logos} />
+      <Services
+        badgeLabel={servicesSection?.badgeLabel}
+        headlineStart={servicesSection?.headlineStart}
+        headlineEmphasis={servicesSection?.headlineEmphasis}
+        headlineEnd={servicesSection?.headlineEnd}
+        items={servicesSection?.items}
+      />
+      <ClientResults results={clientResults} />
+    </>
   );
 }
-
-

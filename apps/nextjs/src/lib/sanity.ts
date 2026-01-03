@@ -30,6 +30,15 @@ export async function cachedSanityFetch<T>(
 ): Promise<T> {
   const { tags, revalidate = 300 } = options;
 
+  // In development we want fresh data on every request (no Next.js caching layer).
+  // You can also force-disable caching in any env by setting SANITY_DISABLE_CACHE=1.
+  if (
+    process.env.NODE_ENV === "development" ||
+    process.env.SANITY_DISABLE_CACHE === "1"
+  ) {
+    return sanityClient.fetch<T>(query);
+  }
+
   const run = unstable_cache(
     () => sanityClient.fetch<T>(query),
     [query, ...(tags ?? [])],

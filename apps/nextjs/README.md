@@ -20,6 +20,18 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Analytics (Google Analytics / GTM)
+
+This app uses **`@next/third-parties/google`** (recommended by Next.js) to load Google Analytics and/or Google Tag Manager without inline scripts.
+
+- **GA4 (recommended if you are not using GTM)**:
+  - Set `NEXT_PUBLIC_GA_ID` (e.g. `G-XXXXXXXXXX`)
+- **GTM (recommended if you manage GA + other tags via Tag Manager)**:
+  - Set `NEXT_PUBLIC_GTM_ID` (e.g. `GTM-XXXXXXX`)
+  - If you use GTM, configure GA inside GTM and leave `NEXT_PUBLIC_GA_ID` empty to avoid double-tracking.
+
+See `.env.example` for the env var template.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

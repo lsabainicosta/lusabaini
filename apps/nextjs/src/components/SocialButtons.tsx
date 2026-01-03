@@ -1,8 +1,10 @@
 "use client";
-import type { ComponentType, CSSProperties } from "react";
+import { useState, type ComponentType, type CSSProperties } from "react";
 import Link from "next/link";
 import { motion, MotionConfig } from "motion/react";
 import { Mail, Phone, Briefcase, LinkIcon } from "lucide-react";
+import { useRouteTransition } from "@/components/motion/RouteTransitionContext";
+import { EASE_OUT, fadeInUpVariants } from "@/components/motion/fade";
 
 type SocialLink = {
   label: string;
@@ -24,39 +26,45 @@ const iconMap: Record<
 };
 
 const listVariants = {
-  initial: {},
-  animate: {
+  hidden: {},
+  show: {
     transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
+      staggerChildren: 0.08,
+      delayChildren: 0.12,
     },
   },
 } as const;
 
 // Child animations — both fade + slide animate together.
-const itemVariants = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-} as const;
+const itemVariants = fadeInUpVariants({ y: 18 });
 
 // Tailwind tile style
 const tileClassName =
   "relative flex min-h-[64px] w-full items-center justify-center gap-3 overflow-hidden rounded-3xl bg-slate-900/95 shadow-[0_18px_55px_rgba(15,23,42,0.35)] transition-transform group cursor-pointer select-none sm:min-h-[72px] md:min-h-[80px]";
 
 export default function SocialButtons({ links }: { links?: SocialLink[] }) {
+  const { disableEnterAnimations } = useRouteTransition();
+  const [disableEnterAnimationsAtMount] = useState(
+    () => disableEnterAnimations
+  );
+
   const resolvedLinks = (links ?? []).filter((link) => link.url && link.label);
   if (!resolvedLinks.length) return null;
 
   return (
     <MotionConfig
-      transition={{ type: "tween", duration: 0.6, ease: "easeInOut" }}
+      transition={{ type: "tween", duration: 0.85, ease: EASE_OUT }}
     >
       <motion.div
         className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-4 sm:px-6 md:grid md:max-w-6xl md:grid-cols-2 md:gap-4 md:px-8 lg:gap-5"
         variants={listVariants}
-        initial="initial"
-        whileInView="animate"
-        viewport={{ once: true, amount: 0.2 }}
+        {...(disableEnterAnimationsAtMount
+          ? { initial: false }
+          : {
+              initial: "hidden",
+              whileInView: "show",
+              viewport: { once: true, amount: 0.2 },
+            })}
       >
         {resolvedLinks.map((link) => {
           const Icon = iconMap[link.icon ?? ""] ?? LinkIcon;
@@ -94,7 +102,9 @@ export default function SocialButtons({ links }: { links?: SocialLink[] }) {
           return isInternal ? (
             <Link key={link._key ?? link.label} href={link.url}>
               <MotionTile
-                variants={itemVariants}
+                variants={
+                  disableEnterAnimationsAtMount ? undefined : itemVariants
+                }
                 whileHover={{ scale: 1.012 }}
                 whileTap={{ scale: 0.985 }}
                 className={tileClassName}
@@ -108,7 +118,9 @@ export default function SocialButtons({ links }: { links?: SocialLink[] }) {
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              variants={itemVariants}
+              variants={
+                disableEnterAnimationsAtMount ? undefined : itemVariants
+              }
               whileHover={{ scale: 1.012 }}
               whileTap={{ scale: 0.985 }}
               className={tileClassName}

@@ -4,6 +4,11 @@ import { motion } from "motion/react";
 import { BadgeCheck, Instagram, Mail, Music2, Share } from "lucide-react";
 import Image from "next/image";
 import { sanityImageLoader } from "../lib/sanityImageLoader";
+import {
+  FADE_IN_DELAY,
+  fadeInUpVariants,
+  fadeInVariants,
+} from "@/components/motion/fade";
 
 type HeaderButton = {
   label: string;
@@ -99,14 +104,9 @@ export default function ProfileHeader({
         style={{ backgroundColor: "var(--brand-soft, #fff0f7)" }}
       >
         <motion.button
-          initial={{ opacity: 0, x: 18 }} // slide in from the right
-          animate={{ opacity: 1, x: 0 }}
-          transition={{
-            delay: 0.08,
-            type: "spring",
-            stiffness: 140,
-            damping: 18,
-          }}
+          initial="hidden"
+          animate="show"
+          variants={fadeInUpVariants({ y: -10, delay: FADE_IN_DELAY })}
           type="button"
           onClick={handleShare}
           aria-label="Share this page"
@@ -117,9 +117,9 @@ export default function ProfileHeader({
 
         {image?.url ? (
           <motion.div
-            initial={{ scale: 1.02, opacity: 0.2 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+            initial="hidden"
+            animate="show"
+            variants={fadeInVariants()}
             className="absolute inset-0"
           >
             <Image
@@ -143,14 +143,9 @@ export default function ProfileHeader({
         />
 
         <motion.div
-          initial={{ y: 18, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{
-            delay: 0.15,
-            type: "spring",
-            stiffness: 120,
-            damping: 20,
-          }}
+          initial="hidden"
+          animate="show"
+          variants={fadeInUpVariants({ y: 18, delay: 0.15 })}
           className="relative z-10 flex w-full flex-col gap-4 px-5 pb-10 text-center sm:px-8 sm:pb-12 md:flex-row md:items-end md:justify-between md:gap-6 md:px-12 md:pb-12 md:text-left lg:px-16 lg:pb-14"
         >
           {name ? (

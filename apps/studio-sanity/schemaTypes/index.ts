@@ -1,5 +1,17 @@
-import {profileHeader} from './profileHeader'
 import {siteSettings} from './siteSettings'
-import {socialButtons} from './socialButtons'
+import {clientResult} from './clientResult'
+import {headerSettings} from './headerSettings'
+import {heroSection} from './heroSection'
+import {brandLogosSection} from './brandLogosSection'
+import {servicesSection} from './servicesSection'
+import {footerSettings} from './footerSettings'
 
-export const schemaTypes = [profileHeader, socialButtons, siteSettings]
+export const schemaTypes = [
+  siteSettings,
+  clientResult,
+  headerSettings,
+  heroSection,
+  brandLogosSection,
+  servicesSection,
+  footerSettings,
+]

@@ -1,93 +1,233 @@
 "use client";
 
-import Link from "next/link";
-import { Instagram, Asterisk, Heart } from "lucide-react";
+import { Instagram, Linkedin } from "lucide-react";
+import type { CtaLink, FooterLink, FooterSocial } from "@/lib/queries";
+import TransitionLink from "@/components/motion/TransitionLink";
+import { Button } from "@/components/ui/button";
 
-export default function Footer() {
-  const currentYear = new Date().getFullYear();
+type Props = {
+  brandLabel?: string;
+  headlineStart?: string;
+  headlineEmphasis?: string;
+  headlineEnd?: string;
+  description?: string;
+  socials?: FooterSocial[];
+  navigationLinks?: FooterLink[];
+  legalLinks?: FooterLink[];
+  cta?: CtaLink;
+};
+
+const defaultNavLinks: FooterLink[] = [
+  { label: "Home", href: "/" },
+  { label: "My Work", href: "/my-work" },
+];
+
+const defaultLegalLinks: FooterLink[] = [
+  { label: "Privacy Policy", href: "/privacy-policy" },
+];
+
+function SocialIcon({ icon }: { icon: FooterSocial["icon"] }) {
+  if (icon === "instagram") return <Instagram className="w-5 h-5" />;
+  if (icon === "linkedin") return <Linkedin className="w-5 h-5" />;
+  return (
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
+
+function isExternalHref(href: string) {
+  return /^(https?:\/\/|mailto:|tel:)/i.test(href);
+}
+
+function formatHeadlineEnd(end?: string) {
+  const value = (end ?? "").trimEnd();
+  if (!value) return "";
+  if (/^\s/.test(end ?? "")) return end ?? "";
+  // Don't add a space before punctuation like "." or ",".
+  if (/^[,.;:!?)/\]]/.test(value)) return value;
+  return ` ${value}`;
+}
+
+function FooterNavLink({
+  href,
+  children,
+  className,
+}: {
+  href: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const safeHref = href?.trim();
+  if (!safeHref || safeHref === "#") return null;
+
+  if (isExternalHref(safeHref)) {
+    return (
+      <a
+        href={safeHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+      >
+        {children}
+      </a>
+    );
+  }
 
   return (
-    <footer className="w-full pt-24 pb-12 mt-20">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="flex flex-col lg:flex-row gap-16 lg:gap-12 justify-between mb-24">
-          {/* Branding Column */}
-          <div className="flex flex-col items-start gap-8 max-w-md">
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black transition-transform group-hover:scale-105">
-                <Heart className="w-6 h-6 text-white fill-white" />
+    <TransitionLink href={safeHref} className={className}>
+      {children}
+    </TransitionLink>
+  );
+}
+
+export default function Footer({
+  brandLabel,
+  headlineStart,
+  headlineEmphasis,
+  headlineEnd,
+  description,
+  socials,
+  navigationLinks,
+  legalLinks,
+  cta,
+}: Props) {
+  const currentYear = new Date().getFullYear();
+  const socialData = (socials ?? [])
+    .filter((s) => (s?.href ?? "").trim() && (s.href ?? "").trim() !== "#")
+    .slice(0, 3);
+
+  const resolvedNavLinks = (navigationLinks ?? [])
+    .filter((l) => l?.href && l?.label)
+    .slice(0, 3);
+
+  const resolvedLegalLinks = (legalLinks ?? [])
+    .filter((l) => l?.href && l?.label)
+    .slice(0, 3);
+
+  const navLinks = resolvedNavLinks.length ? resolvedNavLinks : defaultNavLinks;
+  const privacyHref = "/privacy-policy";
+  const normalizedLegalLinks = [...resolvedLegalLinks];
+  const hasPrivacyLink = normalizedLegalLinks.some(
+    (l) => (l.href ?? "").trim() === privacyHref
+  );
+
+  if (!hasPrivacyLink) {
+    normalizedLegalLinks.push(defaultLegalLinks[0]);
+  }
+
+  const bottomLegalLinks =
+    normalizedLegalLinks.length > 0 ? normalizedLegalLinks : defaultLegalLinks;
+
+  // Keep at most 3, but ensure Privacy Policy is visible.
+  const safeBottomLegalLinks = (() => {
+    if (bottomLegalLinks.length <= 3) return bottomLegalLinks;
+    const firstThree = bottomLegalLinks.slice(0, 3);
+    const privacyInFirstThree = firstThree.some(
+      (l) => (l.href ?? "").trim() === privacyHref
+    );
+    if (privacyInFirstThree) return firstThree;
+    return [...firstThree.slice(0, 2), defaultLegalLinks[0]];
+  })();
+
+  const titleStart = headlineStart || "Short-form that turns attention into";
+  const titleEmphasis = headlineEmphasis || "customers";
+  const titleEnd = headlineEnd || ".";
+  const body =
+    description ||
+    "I create TikTok & Instagram content designed to convert views into booked calls and sales.";
+  const formattedTitleEnd = formatHeadlineEnd(titleEnd);
+
+  const ctaHref = cta?.href?.trim() || "/book-a-call";
+  const ctaLabel = cta?.label?.trim() || "Book a call";
+
+  return (
+    <footer className="w-full mt-24">
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="rounded-3xl border border-black/10 bg-white/60 backdrop-blur-xl px-6 py-10 md:px-10 md:py-12">
+          <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 justify-between">
+            {/* Copy */}
+            <div className="flex flex-col gap-5 max-w-xl">
+              <TransitionLink
+                href="/"
+                className="text-lg font-medium tracking-[-0.05em] text-black hover:opacity-70 transition-opacity font-sans"
+              >
+                {brandLabel || "lu sabaini"}
+              </TransitionLink>
+
+              <div className="flex flex-col gap-3">
+                <h2 className="text-[34px] md:text-[40px] leading-[1.08] font-medium tracking-[-0.04em] text-black">
+                  {titleStart}{" "}
+                  <span className="italic font-serif">{titleEmphasis}</span>
+                  {formattedTitleEnd}
+                </h2>
+                <p className="text-base md:text-lg text-black/60 font-sans leading-relaxed max-w-lg">
+                  {body}
+                </p>
               </div>
-              <span className="text-2xl font-medium tracking-[-0.06em] text-black">lusabaini</span>
-            </Link>
-
-            <div className="flex flex-col gap-4">
-              <h2 className="text-[40px] leading-[1.1] font-medium tracking-[-0.04em] text-black">
-                Social media that <br />
-                drives <span className="italic font-serif">real</span> results
-              </h2>
-              <p className="text-lg text-black/50 font-sans tracking-tight">
-                Built for creators, businesses, and brands.
-              </p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <a href="#" className="w-11 h-11 rounded-full bg-black flex items-center justify-center text-white hover:opacity-80 transition-all hover:scale-105">
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
-              </a>
-              <a href="#" className="w-11 h-11 rounded-full bg-black flex items-center justify-center text-white hover:opacity-80 transition-all hover:scale-105">
-                <Instagram className="w-5 h-5" />
-              </a>
+            {/* Actions */}
+            <div className="flex flex-col gap-8 lg:items-end">
+              <Button
+                asChild
+                className="rounded-full bg-black text-white px-7 py-3 h-auto text-base font-medium hover:bg-black/90 transition-all border-none w-fit"
+              >
+                <FooterNavLink href={ctaHref}>{ctaLabel}</FooterNavLink>
+              </Button>
+
+              <nav className="flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium tracking-tight text-black/70">
+                {navLinks.map((l, i) => (
+                  <FooterNavLink
+                    key={`${l.href}-${i}`}
+                    href={l.href}
+                    className="hover:text-black transition-colors"
+                  >
+                    {l.label}
+                  </FooterNavLink>
+                ))}
+              </nav>
+
+              {socialData.length ? (
+                <div className="flex items-center gap-3">
+                  {socialData.map((s, idx) => (
+                    <a
+                      key={`${s.icon}-${idx}`}
+                      href={s.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={s.label || s.icon}
+                      className="w-10 h-10 rounded-full border border-black/10 bg-white/40 backdrop-blur-md flex items-center justify-center text-black hover:bg-white/70 transition-colors"
+                    >
+                      <SocialIcon icon={s.icon} />
+                    </a>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </div>
 
-          {/* Navigation Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-12 lg:gap-24">
-            {/* Navigate Column */}
-            <div className="flex flex-col gap-8 min-w-[120px]">
-              <h3 className="text-sm font-semibold text-black uppercase tracking-tight">Navigate</h3>
-              <nav className="flex flex-col gap-4">
-                <Link href="/" className="text-black/50 hover:text-black transition-colors text-lg font-medium tracking-tight">Home</Link>
-                <Link href="/about" className="text-black/50 hover:text-black transition-colors text-lg font-medium tracking-tight">About</Link>
-                <Link href="/case-studies" className="text-black/50 hover:text-black transition-colors text-lg font-medium tracking-tight">Case Studies</Link>
-                <Link href="/blog" className="text-black/50 hover:text-black transition-colors text-lg font-medium tracking-tight">Blog</Link>
-              </nav>
-            </div>
-
-            {/* Connect Column */}
-            <div className="flex flex-col gap-8 min-w-[120px]">
-              <h3 className="text-sm font-semibold text-black uppercase tracking-tight">Connect</h3>
-              <nav className="flex flex-col gap-4">
-                <Link href="/book-a-call" className="text-black/50 hover:text-black transition-colors text-lg font-medium tracking-tight">Book a call</Link>
-                <Link href="https://instagram.com" className="text-black/50 hover:text-black transition-colors text-lg font-medium tracking-tight">Instagram</Link>
-                <Link href="https://linkedin.com" className="text-black/50 hover:text-black transition-colors text-lg font-medium tracking-tight">LinkedIn</Link>
-                <Link href="https://twitter.com" className="text-black/50 hover:text-black transition-colors text-lg font-medium tracking-tight">Twitter</Link>
-              </nav>
-            </div>
-
-            {/* Legal Column */}
-            <div className="flex flex-col gap-8 min-w-[120px]">
-              <h3 className="text-sm font-semibold text-black uppercase tracking-tight">Legal</h3>
-              <nav className="flex flex-col gap-4">
-                <Link href="/privacy" className="text-black/50 hover:text-black transition-colors text-lg font-medium tracking-tight">Privacy Policy</Link>
-                <Link href="/terms" className="text-black/50 hover:text-black transition-colors text-lg font-medium tracking-tight">Terms of Service</Link>
-                <Link href="/contact" className="text-black/50 hover:text-black transition-colors text-lg font-medium tracking-tight">Contact</Link>
-                <Link href="/404" className="text-black/50 hover:text-black transition-colors text-lg font-medium tracking-tight">404</Link>
-              </nav>
-            </div>
-          </div>
-        </div>
-
-
-        {/* Bottom Bar */}
-        <div className="pt-12 border-t border-black/5 flex flex-col md:flex-row justify-between items-center gap-6 text-sm font-medium tracking-tight text-black/40">
-          <p>© {currentYear} lusabaini.</p>
-          <div className="flex items-center gap-4">
-            <p>Built with love</p>
+          {/* Bottom Bar */}
+          <div className="mt-10 pt-6 border-t border-black/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-xs font-medium tracking-tight text-black/40">
+            <p>
+              © {currentYear} {brandLabel || "lu sabaini"}
+            </p>
+            {bottomLegalLinks.length ? (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                {safeBottomLegalLinks.map((l, i) => (
+                  <FooterNavLink
+                    key={`${l.href}-${i}`}
+                    href={l.href}
+                    className="hover:text-black/70 transition-colors"
+                  >
+                    {l.label}
+                  </FooterNavLink>
+                ))}
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
     </footer>
   );
 }
-
