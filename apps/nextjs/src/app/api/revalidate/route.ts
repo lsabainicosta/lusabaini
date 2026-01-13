@@ -17,7 +17,10 @@ const corsHeaders = {
 };
 
 export async function POST(request: NextRequest) {
+  console.log("REVALIDATING");
+
   if (!expectedSecret) {
+    console.log("Server missing REVALIDATE_SECRET");
     return NextResponse.json(
       { ok: false, error: "Server missing REVALIDATE_SECRET" },
       { status: 500, headers: corsHeaders }
@@ -28,7 +31,13 @@ export async function POST(request: NextRequest) {
     request.headers.get("x-revalidate-secret") ??
     new URL(request.url).searchParams.get("secret");
 
-  if (provided !== expectedSecret) return unauthorized();
+  console.log("Provided secret:", provided, "Expected secret:", expectedSecret);
+  if (provided !== expectedSecret) {
+    console.log("Provided secret does not match expected secret");
+    return unauthorized();
+  }
+
+  console.log("Provided secret matches expected secret, revalidating...");
 
   // Invalidate all relevant cached tags
   revalidateTag("homepage-content", "max");

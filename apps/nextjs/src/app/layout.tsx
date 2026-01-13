@@ -60,7 +60,7 @@ export default async function RootLayout({
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
 
-  const [{ header, footer }, theme] = await Promise.all([
+  const [{ siteSettings, footer }, theme] = await Promise.all([
     getShellContent(),
     getThemeSettings(),
   ]);
@@ -68,6 +68,11 @@ export default async function RootLayout({
   const brandLight = shiftHexColor(brandColor, 28);
   const brandDark = shiftHexColor(brandColor, -35);
   const brandSoft = shiftHexColor(brandColor, 55);
+  
+  // Centralized settings from Site Settings
+  const mainNavigation = siteSettings?.mainNavigation;
+  const ctaButton = siteSettings?.ctaButton;
+  const socials = siteSettings?.socials;
 
   return (
     <html
@@ -86,7 +91,7 @@ export default async function RootLayout({
         <PwaRegister />
         <LenisScroll />
         <TransitionProvider>
-          <Header navLinks={header?.navLinks} cta={header?.cta} />
+          <Header navLinks={mainNavigation} cta={ctaButton} />
           <PageTransition>
             <main className="relative min-h-screen w-full overflow-x-hidden pt-16">
               {children}
@@ -96,10 +101,10 @@ export default async function RootLayout({
                 headlineEmphasis={footer?.headlineEmphasis}
                 headlineEnd={footer?.headlineEnd}
                 description={footer?.description}
-                socials={footer?.socials}
-                navigationLinks={footer?.navigationLinks}
+                socials={socials}
+                navigationLinks={mainNavigation}
                 legalLinks={footer?.legalLinks}
-                cta={header?.cta}
+                cta={ctaButton}
               />
             </main>
           </PageTransition>

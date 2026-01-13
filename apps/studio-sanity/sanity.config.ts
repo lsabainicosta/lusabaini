@@ -11,11 +11,11 @@ const dataset = process.env.SANITY_STUDIO_DATASET || 'production'
 
 const singletonTypes = new Set([
   'siteSettings',
-  'headerSettings',
   'heroSection',
   'brandLogosSection',
   'servicesSection',
   'footerSettings',
+  'aboutPage',
 ])
 
 function WebhookTriggerTool() {
@@ -39,9 +39,7 @@ export default defineConfig({
               .title('Site Settings')
               .child(S.document().schemaType('siteSettings').documentId('siteSettings')),
             S.divider(),
-            S.listItem()
-              .title('Header')
-              .child(S.document().schemaType('headerSettings').documentId('headerSettings')),
+            // Homepage Sections
             S.listItem()
               .title('Hero')
               .child(S.document().schemaType('heroSection').documentId('heroSection')),
@@ -51,6 +49,13 @@ export default defineConfig({
             S.listItem()
               .title('Services')
               .child(S.document().schemaType('servicesSection').documentId('servicesSection')),
+            S.divider(),
+            // Pages
+            S.listItem()
+              .title('About Page')
+              .child(S.document().schemaType('aboutPage').documentId('aboutPage')),
+            S.divider(),
+            // Footer
             S.listItem()
               .title('Footer')
               .child(S.document().schemaType('footerSettings').documentId('footerSettings')),
