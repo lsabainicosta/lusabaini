@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { getClientResultById, getClientResultBySlug, getClientResults } from "@/lib/queries";
 import { createSlug } from "@/lib/utils";
 import TransitionLink from "@/components/motion/TransitionLink";
-import { ArrowLeft, ArrowRight, Instagram } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import SocialLinks from "@/components/SocialLinks";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -114,9 +115,9 @@ export default async function WorkDetailPage({ params }: Props) {
       </section>
 
       {/* Info Section */}
-      <section className="w-full pb-24">
+      <section className="w-full pb-12">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="flex justify-between md:gap-12 bg-white/35 border border-black/10 rounded-[1rem] px-10 py-4">
+          <div className="flex flex-wrap items-start justify-between gap-8 md:gap-12 bg-white/35 border border-black/10 rounded-[1rem] px-10 py-6">
             {/* Category */}
             <div>
               <div className="text-sm font-medium text-black/60 mb-2">Category</div>
@@ -125,21 +126,14 @@ export default async function WorkDetailPage({ params }: Props) {
               </div>
             </div>
 
-            {/* Platforms */}
+            {/* Platforms/Socials */}
             <div>
-              <div className="text-sm font-medium text-black/60 mb-2">Platforms</div>
-              <div className="flex items-center gap-3">
-                <Instagram className="w-5 h-5 text-black" />
-                <svg className="w-5 h-5 text-black" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                </svg>
-                <svg className="w-5 h-5 text-black" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
-                </svg>
-                <svg className="w-5 h-5 text-black" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
-              </div>
+              <div className="text-sm font-medium text-black/60 mb-2">Socials</div>
+              {result.socials && result.socials.length > 0 ? (
+                <SocialLinks socials={result.socials} />
+              ) : (
+                <div className="text-black/40 italic">Link coming soon</div>
+              )}
             </div>
 
             {/* Year */}
@@ -150,6 +144,30 @@ export default async function WorkDetailPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {/* Additional Videos Section */}
+      {result.additionalVideos && result.additionalVideos.length > 0 && (
+        <section className="w-full pb-24">
+          <div className="max-w-6xl mx-auto px-6">
+            <h2 className="text-3xl font-medium tracking-tight mb-8">Related Content</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {result.additionalVideos.map((video, index) => (
+                <div 
+                  key={video._key || index}
+                  className="relative aspect-[9/16] md:aspect-video w-full overflow-hidden rounded-2xl border-4 border-white shadow-lg bg-black/5"
+                >
+                  <video
+                    src={video.url}
+                    controls
+                    playsInline
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </>
   );
 }

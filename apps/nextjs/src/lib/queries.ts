@@ -8,6 +8,7 @@ type ProfileImage = {
 
 type MediaFile = {
   url: string;
+  _key?: string;
 };
 
 export type NavLink = {
@@ -152,6 +153,8 @@ export type ClientResult = {
   video?: MediaFile;
   imageOverlayText?: string;
   stats?: ClientResultStat[];
+  socials?: SocialLink[];
+  additionalVideos?: MediaFile[];
 };
 
 export type ThemeSettings = {
@@ -180,8 +183,18 @@ const clientResultFields = `{
     "label": coalesce(label, ""),
     "subLabel": coalesce(subLabel, ""),
     _key
+  },
+  "socials": socials[]{
+    icon,
+    "href": coalesce(href, ""),
+    "label": coalesce(label, ""),
+    _key
+  },
+  "additionalVideos": additionalVideos[]{
+    "url": coalesce(asset->url, ""),
+    _key
   }
-}`;
+} `;
 
 const clientResultsBase = `*[_type == "clientResult"] | order(_updatedAt desc)`;
 

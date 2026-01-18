@@ -133,6 +133,82 @@ export const clientResult = defineType({
       type: 'number',
       description: 'Lower numbers show first on the homepage. If empty, newest items come first.',
     }),
+    defineField({
+      name: 'socials',
+      title: 'Social Media Links',
+      type: 'array',
+      description: 'Social media links specific to this client project (e.g. specific posts).',
+      of: [
+        defineField({
+          name: 'social',
+          title: 'Social',
+          type: 'object',
+          fields: [
+            defineField({
+              name: 'icon',
+              title: 'Platform',
+              type: 'string',
+              options: {
+                list: [
+                  {title: 'Instagram', value: 'instagram'},
+                  {title: 'TikTok', value: 'tiktok'},
+                  {title: 'YouTube', value: 'youtube'},
+                  {title: 'X (Twitter)', value: 'x'},
+                  {title: 'LinkedIn', value: 'linkedin'},
+                  {title: 'Facebook', value: 'facebook'},
+                ],
+                layout: 'dropdown',
+              },
+              validation: (Rule) => Rule.required(),
+            }),
+            defineField({
+              name: 'href',
+              title: 'URL',
+              type: 'url',
+              validation: (Rule) => Rule.required(),
+            }),
+            defineField({
+              name: 'label',
+              title: 'Label',
+              type: 'string',
+              description: 'Used for accessibility (e.g. "View post on Instagram").',
+            }),
+          ],
+          preview: {
+            select: {title: 'icon', subtitle: 'href'},
+            prepare({title, subtitle}) {
+              const platformNames: Record<string, string> = {
+                instagram: 'Instagram',
+                tiktok: 'TikTok',
+                youtube: 'YouTube',
+                x: 'X (Twitter)',
+                linkedin: 'LinkedIn',
+                facebook: 'Facebook',
+              }
+              return {
+                title: platformNames[title] || title,
+                subtitle,
+              }
+            },
+          },
+        }),
+      ],
+      validation: (Rule) => Rule.max(6),
+    }),
+    defineField({
+      name: 'additionalVideos',
+      title: 'Additional Videos',
+      type: 'array',
+      description: 'Gallery of videos shown beneath the project info.',
+      of: [
+        {
+          type: 'file',
+          options: {
+            accept: 'video/*',
+          },
+        },
+      ],
+    }),
   ],
   preview: {
     select: {
