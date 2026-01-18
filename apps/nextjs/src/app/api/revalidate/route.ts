@@ -40,13 +40,23 @@ export async function POST(request: NextRequest) {
   console.log("Provided secret matches expected secret, revalidating...");
 
   // Invalidate all relevant cached tags
-  revalidateTag("homepage-content", "max");
-  revalidateTag("theme-settings", "max");
+  const tagsToRevalidate = [
+    "homepage-content",
+    "shell-content",
+    "home-sections",
+    "theme-settings",
+    "client-results",
+    "about-page",
+  ];
+
+  tagsToRevalidate.forEach((tag) => {
+    revalidateTag(tag, "max");
+  });
 
   return NextResponse.json(
     {
       ok: true,
-      revalidated: ["homepage-content", "theme-settings"],
+      revalidated: tagsToRevalidate,
     },
     { headers: corsHeaders }
   );
