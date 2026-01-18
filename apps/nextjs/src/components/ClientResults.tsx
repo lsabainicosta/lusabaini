@@ -17,18 +17,15 @@ export default function ClientResults({ results }: Props) {
 
   if (items.length === 0) return null;
 
+  // Only show last 3 updated items (most recently updated first)
+  const displayItems = items.slice(0, 3);
+
   return (
     <section className="w-full py-24">
       <div className="max-w-6xl mx-auto px-6 flex flex-col gap-20">
-        {items.map((result) => (
-          <Stagger
-            key={result._id}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-center"
-            amount={0.5}
-            stagger={0.09}
-            delayChildren={0.02}
-          >
-            {/* Left */}
+        {displayItems.map((result, index) => {
+          const isEven = index % 2 === 0;
+          const TextContent = (
             <div className="flex flex-col items-start gap-8">
               <StaggerItem>
                 <Badge className="px-4 py-1 bg-black/5 rounded-lg text-xs font-semibold uppercase tracking-wider text-black/60 border-transparent">
@@ -86,8 +83,9 @@ export default function ClientResults({ results }: Props) {
                 </StaggerItem>
               ) : null}
             </div>
+          );
 
-            {/* Right */}
+          const ImageContent = (
             <div className="w-full">
               <StaggerItem y={22}>
                 <div className="bg-white/35 border border-black/10 rounded-[2.5rem] p-1 lg:p-2">
@@ -142,8 +140,23 @@ export default function ClientResults({ results }: Props) {
                 </div>
               </StaggerItem>
             </div>
-          </Stagger>
-        ))}
+          );
+
+          return (
+            <Stagger
+              key={result._id}
+              className={`grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-center ${
+                !isEven ? "lg:[&>div:first-child]:order-2 lg:[&>div:last-child]:order-1" : ""
+              }`}
+              amount={0.5}
+              stagger={0.09}
+              delayChildren={0.02}
+            >
+              {TextContent}
+              {ImageContent}
+            </Stagger>
+          );
+        })}
       </div>
     </section>
   );

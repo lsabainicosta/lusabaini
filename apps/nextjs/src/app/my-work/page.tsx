@@ -2,6 +2,8 @@ import Image from "next/image";
 import Reveal from "@/components/motion/Reveal";
 import { Badge } from "@/components/ui/badge";
 import { getClientResults } from "@/lib/queries";
+import { createSlug } from "@/lib/utils";
+import TransitionLink from "@/components/motion/TransitionLink";
 
 function Stars({ count = 5 }: { count?: number }) {
   return (
@@ -110,44 +112,48 @@ export default async function CaseStudiesPage() {
                 "Case study";
               const category = result.category?.trim();
               const overlay = result.imageOverlayText || result.clientName;
+              const slug = result.clientName ? createSlug(result.clientName) : result._id;
+              const href = `/my-work/${slug}`;
 
               return (
                 <Reveal key={result._id}>
-                  <article className="group">
-                    <div className="bg-white/35 border border-black/10 rounded-[2.5rem] p-3 sm:p-4">
-                      <div className="relative overflow-hidden rounded-[2rem] aspect-16/10 bg-black/5">
-                        {result.image?.url ? (
-                          <Image
-                            src={result.image.url}
-                            alt={result.image.alt || title}
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                            sizes="(min-width: 1024px) 560px, 92vw"
-                            priority={false}
-                          />
-                        ) : null}
+                  <TransitionLink href={href} className="block group">
+                    <article>
+                      <div className="bg-white/35 border border-black/10 rounded-[2.5rem] p-3 sm:p-4">
+                        <div className="relative overflow-hidden rounded-[2rem] aspect-16/10 bg-black/5">
+                          {result.image?.url ? (
+                            <Image
+                              src={result.image.url}
+                              alt={result.image.alt || title}
+                              fill
+                              className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                              sizes="(min-width: 1024px) 560px, 92vw"
+                              priority={false}
+                            />
+                          ) : null}
 
-                        {overlay ? (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="text-white text-4xl sm:text-5xl font-serif tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
-                              {overlay}
+                          {overlay ? (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="text-white text-4xl sm:text-5xl font-serif tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
+                                {overlay}
+                              </div>
                             </div>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      <div className="mt-4 bg-black/5 border border-black/10 rounded-2xl px-5 sm:px-6 py-4 flex items-center justify-between">
+                        <div className="text-lg sm:text-xl font-medium tracking-[-0.04em] text-black">
+                          {title}
+                        </div>
+                        {category ? (
+                          <div className="text-sm font-medium text-black/50">
+                            {category}
                           </div>
                         ) : null}
                       </div>
-                    </div>
-
-                    <div className="mt-4 bg-black/5 border border-black/10 rounded-2xl px-5 sm:px-6 py-4 flex items-center justify-between">
-                      <div className="text-lg sm:text-xl font-medium tracking-[-0.04em] text-black">
-                        {title}
-                      </div>
-                      {category ? (
-                        <div className="text-sm font-medium text-black/50">
-                          {category}
-                        </div>
-                      ) : null}
-                    </div>
-                  </article>
+                    </article>
+                  </TransitionLink>
                 </Reveal>
               );
             })}

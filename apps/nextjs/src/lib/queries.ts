@@ -1,4 +1,5 @@
 import { cachedSanityFetch } from "./sanity";
+import { createSlug } from "./utils";
 
 type ProfileImage = {
   url: string;
@@ -182,7 +183,7 @@ const clientResultFields = `{
   }
 }`;
 
-const clientResultsBase = `*[_type == "clientResult"] | order(order asc, _createdAt desc)`;
+const clientResultsBase = `*[_type == "clientResult"] | order(_updatedAt desc)`;
 
 const contentQuery = `
 {
@@ -383,6 +384,31 @@ ${clientResultsBase}${limitSlice}${clientResultFields}
     tags: ["client-results"],
     revalidate: 12 * 60 * 60,
   });
+}
+
+export async function getClientResultById(id: string): Promise<ClientResult | null> {
+  // Sanitize id to prevent injection (it should only contain alphanumeric and hyphens)
+  const sanitizedId = id.replace(/[^a-zA-Z0-9-]/g, '');
+  const query = `
+*[_type == "clientResult" && _id == "${sanitizedId}"][0]${clientResultFields}
+`;
+
+  return cachedSanityFetch(query, {
+    tags: ["client-results"],
+    revalidate: 12 * 60 * 60,
+  });
+}
+
+export async function getClientResultBySlug(slug: string): Promise<ClientResult | null> {
+  // Fetch all results and match by slug on the client side
+  // This is simpler than trying to do complex string matching in GROQ
+  const allResults = await getClientResults();
+  
+  return allResults.find((result) => {
+    if (!result.clientName) return false;
+    const resultSlug = createSlug(result.clientName);
+    return resultSlug === slug.toLowerCase();
+  }) || null;
 }
 
 // About Page Types
