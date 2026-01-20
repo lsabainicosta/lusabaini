@@ -65,7 +65,6 @@ export type BrandLogosSectionContent = {
 export type ServiceItem = {
   title: string;
   description?: string;
-  videoSrc?: string;
   _key?: string;
 };
 
@@ -275,7 +274,6 @@ const contentQuery = `
     "items": items[]{
       "title": coalesce(title, ""),
       "description": coalesce(description, ""),
-      "videoSrc": coalesce(video.asset->url, videoSrc, ""),
       _key
     }
   },
@@ -369,7 +367,6 @@ const homeSectionsQuery = `
     "items": items[]{
       "title": coalesce(title, ""),
       "description": coalesce(description, ""),
-      "videoSrc": coalesce(video.asset->url, videoSrc, ""),
       _key
     }
   },
