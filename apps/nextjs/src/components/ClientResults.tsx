@@ -131,7 +131,7 @@ export default function ClientResults({ results }: Props) {
                         y={10}
                         className="absolute inset-0 flex items-center justify-center"
                       >
-                        <div className="text-white text-4xl lg:text-5xl font-serif tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
+                        <div className="text-white text-4xl lg:text-5xl font-serif tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] max-w-md text-center">
                           {result.imageOverlayText || result.clientName}
                         </div>
                       </StaggerItem>

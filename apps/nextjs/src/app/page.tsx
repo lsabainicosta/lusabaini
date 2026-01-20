@@ -20,6 +20,7 @@ export default async function Home() {
         primaryCta={hero?.primaryCta}
         secondaryCta={hero?.secondaryCta}
         carouselVideos={hero?.carouselVideos}
+        storyUserInfo={hero?.storyUserInfo}
       />
       <BrandLogos introText={brandLogos?.introText} logos={brandLogos?.logos} />
       <Services

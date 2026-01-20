@@ -77,7 +77,7 @@ export default function AboutJourney({ title, items }: Props) {
         {/* Timeline */}
         <div className="relative">
           {/* Vertical line */}
-          <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-foreground/20 via-foreground/10 to-transparent md:-translate-x-1/2" />
+          <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-px bg-linear-to-b from-foreground/20 via-foreground/10 to-transparent md:-translate-x-1/2" />
 
           {/* Timeline items */}
           <div className="flex flex-col gap-12">
@@ -108,7 +108,7 @@ export default function AboutJourney({ title, items }: Props) {
                 <div
                   className={`absolute left-8 md:left-1/2 top-0 -translate-x-1/2 z-10`}
                 >
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--brand-color)] to-[var(--brand-soft)] flex items-center justify-center shadow-lg ring-4 ring-background">
+                  <div className="w-16 h-16 rounded-full bg-linear-to-br from-(--brand-color) to-(--brand-soft) flex items-center justify-center shadow-lg ring-4 ring-background">
                     <span className="text-sm font-bold text-foreground/80">
                       {item.year}
                     </span>

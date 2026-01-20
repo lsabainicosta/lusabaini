@@ -16,6 +16,14 @@ type Props = {
   primaryCta?: { href?: string; label?: string };
   secondaryCta?: { href?: string; label?: string };
   carouselVideos?: Array<{ url?: string; title?: string }>;
+  storyUserInfo?: {
+    username?: string;
+    timeAgo?: string;
+    profileImage?: {
+      url?: string;
+      alt?: string;
+    };
+  };
 };
 
 const Hero = ({
@@ -26,6 +34,7 @@ const Hero = ({
   primaryCta,
   secondaryCta,
   carouselVideos,
+  storyUserInfo,
 }: Props) => {
   const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
   const { disableEnterAnimations } = useRouteTransition();
@@ -122,7 +131,7 @@ const Hero = ({
         variants={fadeInUpVariants({ y: 28, delay: 0.18 })}
       >
         {showStoryMockup ? (
-          <StoryMockup stories={carouselVideos} />
+          <StoryMockup stories={carouselVideos} userInfo={storyUserInfo} />
         ) : (
           <div className="relative w-[350px]">
             <div className="relative aspect-9/16 rounded-[2.5rem] overflow-hidden border-8 border-white shadow-2xl bg-black/5" />

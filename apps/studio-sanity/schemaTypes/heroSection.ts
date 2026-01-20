@@ -99,6 +99,43 @@ export const heroSection = defineType({
       ],
       validation: (Rule) => Rule.max(10),
     }),
+    defineField({
+      name: 'storyUserInfo',
+      title: 'Story User Info',
+      type: 'object',
+      description: 'User information displayed in the story mockup overlay.',
+      fields: [
+        defineField({
+          name: 'username',
+          title: 'Username',
+          type: 'string',
+          initialValue: 'lusabaini',
+          validation: (Rule) => Rule.required(),
+        }),
+        defineField({
+          name: 'timeAgo',
+          title: 'Time Ago',
+          type: 'string',
+          description: 'Time displayed next to username (e.g., "6h", "2d", "1w")',
+          initialValue: '6h',
+        }),
+        defineField({
+          name: 'profileImage',
+          title: 'Profile Image',
+          type: 'image',
+          options: {
+            hotspot: true,
+          },
+          fields: [
+            defineField({
+              name: 'alt',
+              title: 'Alt Text',
+              type: 'string',
+            }),
+          ],
+        }),
+      ],
+    }),
   ],
   preview: {
     prepare() {

@@ -1,7 +1,7 @@
 import {defineField, defineType} from 'sanity'
 
-export const footerSettings = defineType({
-  name: 'footerSettings',
+export const footerSection = defineType({
+  name: 'footerSection',
   title: 'Footer',
   type: 'document',
   initialValue: {
@@ -16,9 +16,9 @@ export const footerSettings = defineType({
   fields: [
     defineField({
       name: 'brandLabel',
-      title: 'Brand label',
+      title: 'Brand Label',
       type: 'string',
-      description: 'Text next to the icon (e.g. “lusabaini”).',
+      description: 'Text next to the icon (e.g. "lusabaini").',
     }),
     defineField({
       name: 'headlineStart',
@@ -42,7 +42,7 @@ export const footerSettings = defineType({
     }),
     defineField({
       name: 'legalLinks',
-      title: 'Legal links',
+      title: 'Legal Links',
       description: 'Optional. Keep small and quiet.',
       type: 'array',
       of: [

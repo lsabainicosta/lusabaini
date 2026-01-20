@@ -2,10 +2,34 @@ import Image from "next/image";
 import TransitionLink from "@/components/motion/TransitionLink";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getNotFoundPageContent } from "@/lib/queries";
+import { sanityImageLoader } from "@/lib/sanityImageLoader";
 
 import lulu from "@/assets/lulu.webp";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const content = await getNotFoundPageContent();
+
+  const badgeLabel = content?.badgeLabel || "404 — Not found";
+  const headlineStart = content?.headlineStart || "This page went";
+  const headlineEmphasis = content?.headlineEmphasis;
+  const headlineEnd = content?.headlineEnd;
+  const description =
+    content?.description ||
+    "The link might be broken, or the page may have been moved. Let's get you back to something good.";
+  const primaryButtonLabel = content?.primaryButton?.label || "Back home";
+  const primaryButtonHref = content?.primaryButton?.href || "/";
+  const secondaryButtonLabel = content?.secondaryButton?.label || "See my work";
+  const secondaryButtonHref = content?.secondaryButton?.href || "/my-work";
+  const profileImageUrl = content?.profileImage?.url;
+  const profileImageAlt = content?.profileImage?.alt || "Luiza Sabaini Costa";
+  const errorNumber = content?.errorNumber || "404";
+  const errorSubtitle = content?.errorSubtitle || "Lost, but still looking good.";
+
+  // Use Sanity image if available, otherwise fallback to local image
+  const imageSrc = profileImageUrl || lulu;
+  const imageAlt = profileImageUrl ? profileImageAlt : "Luiza Sabaini Costa";
+
   return (
     <section className="w-full pt-20 pb-24">
       <div className="max-w-6xl mx-auto px-6">
@@ -13,17 +37,17 @@ export default function NotFound() {
           {/* Copy */}
           <div className="flex flex-col items-start gap-8">
             <Badge className="px-4 py-1 bg-black/5 rounded-lg text-xs font-semibold uppercase tracking-wider text-black/60 border-transparent">
-              404 — Not found
+              {badgeLabel}
             </Badge>
 
             <div className="flex flex-col gap-4">
               <h1 className="text-6xl sm:text-7xl lg:text-8xl font-medium tracking-[-0.04em] leading-[0.9] text-black">
-                This page went{" "}
-                <span className="italic font-serif">missing</span>.
+                {headlineStart}{" "}
+                <span className="italic font-serif">{headlineEmphasis}</span>
+                {headlineEnd ? ` ${headlineEnd}` : ""}
               </h1>
               <p className="text-xl text-black/60 max-w-xl font-sans leading-relaxed">
-                The link might be broken, or the page may have been moved. Let’s
-                get you back to something good.
+                {description}
               </p>
             </div>
 
@@ -32,14 +56,18 @@ export default function NotFound() {
                 asChild
                 className="rounded-full bg-black text-white px-8 py-4 h-auto text-lg font-medium hover:bg-black/90 transition-all border-none"
               >
-                <TransitionLink href="/">Back home</TransitionLink>
+                <TransitionLink href={primaryButtonHref}>
+                  {primaryButtonLabel}
+                </TransitionLink>
               </Button>
               <Button
                 asChild
                 variant="outline"
                 className="rounded-full px-8 py-4 h-auto text-lg font-medium border-black/15 shadow-none hover:bg-black/5"
               >
-                <TransitionLink href="/my-work">See my work</TransitionLink>
+                <TransitionLink href={secondaryButtonHref}>
+                  {secondaryButtonLabel}
+                </TransitionLink>
               </Button>
             </div>
           </div>
@@ -53,8 +81,9 @@ export default function NotFound() {
                   <div className="flex flex-col items-center gap-4">
                     <div className="relative h-24 w-24 overflow-hidden rounded-full border border-black/10 bg-white/60">
                       <Image
-                        src={lulu}
-                        alt="Luiza Sabaini Costa"
+                        loader={profileImageUrl ? sanityImageLoader : undefined}
+                        src={imageSrc}
+                        alt={imageAlt}
                         className="object-cover"
                         width={96}
                         height={96}
@@ -63,10 +92,10 @@ export default function NotFound() {
                     </div>
                     <div className="text-center">
                       <div className="text-4xl font-medium tracking-[-0.06em] text-black">
-                        404
+                        {errorNumber}
                       </div>
                       <div className="text-sm text-black/50 font-sans">
-                        Lost, but still looking good.
+                        {errorSubtitle}
                       </div>
                     </div>
                   </div>

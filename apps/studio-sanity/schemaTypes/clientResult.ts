@@ -156,6 +156,7 @@ export const clientResult = defineType({
                   {title: 'X (Twitter)', value: 'x'},
                   {title: 'LinkedIn', value: 'linkedin'},
                   {title: 'Facebook', value: 'facebook'},
+                  {title: 'Email', value: 'email'},
                 ],
                 layout: 'dropdown',
               },
@@ -164,14 +165,43 @@ export const clientResult = defineType({
             defineField({
               name: 'href',
               title: 'URL',
-              type: 'url',
-              validation: (Rule) => Rule.required(),
+              type: 'string',
+              validation: (Rule) =>
+                Rule.required().custom((value, context) => {
+                  if (!value) return true;
+                  // Allow mailto: links for email icons
+                  if (typeof value === 'string' && value.startsWith('mailto:')) {
+                    return true;
+                  }
+                  // Validate as URL for other cases
+                  try {
+                    new URL(value);
+                    return true;
+                  } catch {
+                    return 'Must be a valid URL or mailto: link';
+                  }
+                }),
             }),
             defineField({
               name: 'label',
               title: 'Label',
               type: 'string',
               description: 'Used for accessibility (e.g. "View post on Instagram").',
+            }),
+            defineField({
+              name: 'emailSubject',
+              title: 'Email Subject',
+              type: 'string',
+              description: 'Optional default subject for email links. Only used when icon is "Email".',
+              hidden: ({parent}) => parent?.icon !== 'email',
+            }),
+            defineField({
+              name: 'emailBody',
+              title: 'Email Body',
+              type: 'text',
+              rows: 3,
+              description: 'Optional default body text for email links. Only used when icon is "Email".',
+              hidden: ({parent}) => parent?.icon !== 'email',
             }),
           ],
           preview: {
@@ -184,6 +214,7 @@ export const clientResult = defineType({
                 x: 'X (Twitter)',
                 linkedin: 'LinkedIn',
                 facebook: 'Facebook',
+                email: 'Email',
               }
               return {
                 title: platformNames[title] || title,

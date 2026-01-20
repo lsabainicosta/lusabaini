@@ -36,7 +36,7 @@ export default function AboutStory({ title, content, image }: Props) {
           {/* Image */}
           {imageUrl ? (
             <motion.div
-              className="flex-shrink-0 order-2 lg:order-1"
+              className="shrink-0 order-2 lg:order-1"
               {...(disableEnterAnimationsAtMount
                 ? { initial: false }
                 : {
@@ -51,7 +51,7 @@ export default function AboutStory({ title, content, image }: Props) {
                   })}
             >
               <div className="relative w-[300px] h-[380px] lg:w-[360px] lg:h-[440px]">
-                <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-[var(--brand-color)] to-[var(--brand-dark)] opacity-15 blur-xl -rotate-3" />
+                <div className="absolute inset-0 rounded-[2rem] bg-linear-to-br from-(--brand-color) to-(--brand-dark) opacity-15 blur-xl -rotate-3" />
                 <div className="relative w-full h-full rounded-[2rem] overflow-hidden border-2 border-white/40 shadow-xl rotate-2 hover:rotate-0 transition-transform duration-500">
                   <Image
                     src={imageUrl}

@@ -1,7 +1,8 @@
 "use client";
 
-import { Instagram, Linkedin } from "lucide-react";
+import { Instagram, Linkedin, Mail } from "lucide-react";
 import type { SocialLink } from "@/lib/queries";
+import { buildMailtoUrl } from "@/lib/utils";
 
 type Props = {
   socials?: SocialLink[];
@@ -13,6 +14,7 @@ type Props = {
 function SocialIcon({ icon }: { icon: SocialLink["icon"] }) {
   if (icon === "instagram") return <Instagram className="w-5 h-5" />;
   if (icon === "linkedin") return <Linkedin className="w-5 h-5" />;
+  if (icon === "email") return <Mail className="w-5 h-5" />;
   if (icon === "tiktok") {
     return (
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -34,12 +36,15 @@ function SocialIcon({ icon }: { icon: SocialLink["icon"] }) {
       </svg>
     );
   }
-  // X (Twitter)
-  return (
-    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-    </svg>
-  );
+  if (icon === "x") {
+    return (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+      </svg>
+    );
+  }
+  // Fallback (should not happen with proper types)
+  return <Mail className="w-5 h-5" />;
 }
 
 export default function SocialLinks({
@@ -55,18 +60,26 @@ export default function SocialLinks({
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>
-      {socialData.map((s, idx) => (
-        <a
-          key={`${s.icon}-${idx}`}
-          href={s.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={s.label || s.icon}
-          className={buttonClassName}
-        >
-          <SocialIcon icon={s.icon} />
-        </a>
-      ))}
+      {socialData.map((s, idx) => {
+        // Enhance mailto links with subject and body if provided
+        const href =
+          s.icon === "email"
+            ? buildMailtoUrl(s.href, s.emailSubject, s.emailBody)
+            : s.href;
+
+        return (
+          <a
+            key={`${s.icon}-${idx}`}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={s.label || s.icon}
+            className={buttonClassName}
+          >
+            <SocialIcon icon={s.icon} />
+          </a>
+        );
+      })}
     </div>
   );
 }

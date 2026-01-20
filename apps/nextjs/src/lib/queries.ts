@@ -27,6 +27,12 @@ export type HeaderSettings = {
   cta?: CtaLink;
 };
 
+export type StoryUserInfo = {
+  username?: string;
+  timeAgo?: string;
+  profileImage?: ProfileImage;
+};
+
 export type HeroSectionContent = {
   headlineStart?: string;
   headlineEmphasis?: string;
@@ -35,6 +41,7 @@ export type HeroSectionContent = {
   primaryCta?: CtaLink;
   secondaryCta?: CtaLink;
   carouselVideos?: HeroCarouselVideo[];
+  storyUserInfo?: StoryUserInfo;
 };
 
 export type HeroCarouselVideo = {
@@ -71,9 +78,11 @@ export type ServicesSectionContent = {
 };
 
 export type SocialLink = {
-  icon: "instagram" | "tiktok" | "youtube" | "x" | "linkedin" | "facebook";
+  icon: "instagram" | "tiktok" | "youtube" | "x" | "linkedin" | "facebook" | "email";
   href: string;
   label?: string;
+  emailSubject?: string;
+  emailBody?: string;
   _key?: string;
 };
 
@@ -101,24 +110,27 @@ export type SiteSettings = {
 
 const shellQuery = `
 {
-  "siteSettings": *[_type == "siteSettings" && _id == "siteSettings"][0]{
-    "mainNavigation": mainNavigation[]{
+  "siteSettings": {
+    "mainNavigation": *[_type == "navigationSection" && _id == "navigationSection"][0].mainNavigation[]{
       "label": coalesce(label, ""),
       "href": coalesce(href, ""),
       _key
     },
     "ctaButton": {
-      "label": coalesce(ctaButton.label, ""),
-      "href": coalesce(ctaButton.href, "")
+      "label": coalesce(*[_type == "navigationSection" && _id == "navigationSection"][0].ctaButton.label, ""),
+      "href": coalesce(*[_type == "navigationSection" && _id == "navigationSection"][0].ctaButton.href, "")
     },
-    "socials": socials[]{
+    "socials": *[_type == "socialMediaSection" && _id == "socialMediaSection"][0].socials[]{
       icon,
       "href": coalesce(href, ""),
       "label": coalesce(label, ""),
+      "emailSubject": coalesce(emailSubject, ""),
+      "emailBody": coalesce(emailBody, ""),
       _key
-    }
+    },
+    "brandColor": coalesce(*[_type == "brandingSection" && _id == "brandingSection"][0].brandColor.hex, "#f9f3eb")
   },
-  "footer": *[_type == "footerSettings" && _id == "footerSettings"][0]{
+  "footer": *[_type == "footerSection" && _id == "footerSection"][0]{
     "brandLabel": coalesce(brandLabel, ""),
     "headlineStart": coalesce(headlineStart, ""),
     "headlineEmphasis": coalesce(headlineEmphasis, ""),
@@ -188,6 +200,8 @@ const clientResultFields = `{
     icon,
     "href": coalesce(href, ""),
     "label": coalesce(label, ""),
+    "emailSubject": coalesce(emailSubject, ""),
+    "emailBody": coalesce(emailBody, ""),
     _key
   },
   "additionalVideos": additionalVideos[]{
@@ -200,7 +214,7 @@ const clientResultsBase = `*[_type == "clientResult"] | order(_updatedAt desc)`;
 
 const contentQuery = `
 {
-  "theme": *[_type == "siteSettings" && _id == "siteSettings"][0]{
+  "theme": *[_type == "brandingSection" && _id == "brandingSection"][0]{
     "brandColor": coalesce(brandColor.hex, "#f9f3eb"),
   },
   "header": *[_type == "headerSettings" && _id == "headerSettings"][0]{
@@ -231,6 +245,14 @@ const contentQuery = `
       "title": coalesce(title, ""),
       "url": coalesce(video.asset->url, ""),
       _key
+    },
+    "storyUserInfo": storyUserInfo {
+      "username": coalesce(username, ""),
+      "timeAgo": coalesce(timeAgo, ""),
+      "profileImage": profileImage {
+        "url": coalesce(asset->url, ""),
+        "alt": coalesce(alt, username, "")
+      }
     }
   },
   "brandLogos": *[_type == "brandLogosSection" && _id == "brandLogosSection"][0]{
@@ -257,23 +279,12 @@ const contentQuery = `
       _key
     }
   },
-  "footer": *[_type == "footerSettings" && _id == "footerSettings"][0]{
+  "footer": *[_type == "footerSection" && _id == "footerSection"][0]{
     "brandLabel": coalesce(brandLabel, ""),
     "headlineStart": coalesce(headlineStart, ""),
     "headlineEmphasis": coalesce(headlineEmphasis, ""),
     "headlineEnd": coalesce(headlineEnd, ""),
     "description": coalesce(description, ""),
-    "socials": socials[]{
-      icon,
-      "href": coalesce(href, ""),
-      "label": coalesce(label, ""),
-      _key
-    },
-    "navigationLinks": navigationLinks[]{
-      "label": coalesce(label, ""),
-      "href": coalesce(href, ""),
-      _key
-    },
     "legalLinks": legalLinks[]{
       "label": coalesce(label, ""),
       "href": coalesce(href, ""),
@@ -328,6 +339,14 @@ const homeSectionsQuery = `
       "title": coalesce(title, ""),
       "url": coalesce(video.asset->url, ""),
       _key
+    },
+    "storyUserInfo": storyUserInfo {
+      "username": coalesce(username, ""),
+      "timeAgo": coalesce(timeAgo, ""),
+      "profileImage": profileImage {
+        "url": coalesce(asset->url, ""),
+        "alt": coalesce(alt, username, "")
+      }
     }
   },
   "brandLogos": *[_type == "brandLogosSection" && _id == "brandLogosSection"][0]{
@@ -371,7 +390,7 @@ export async function getHomeSectionsContent(): Promise<{
 }
 
 const themeQuery = `
-*[_type == "siteSettings" && _id == "siteSettings"][0]{
+*[_type == "brandingSection" && _id == "brandingSection"][0]{
   "brandColor": coalesce(brandColor.hex, "#ff7edb"),
 }
 `;
@@ -476,51 +495,234 @@ export type AboutPageContent = {
 };
 
 const aboutPageQuery = `
-*[_type == "aboutPage" && _id == "aboutPage"][0]{
-  "badgeLabel": coalesce(badgeLabel, "About me"),
-  "headlineStart": coalesce(headlineStart, ""),
-  "headlineEmphasis": coalesce(headlineEmphasis, ""),
-  "headlineEnd": coalesce(headlineEnd, ""),
-  "heroDescription": coalesce(heroDescription, ""),
-  "profileImage": {
-    "url": coalesce(profileImage.asset->url, ""),
-    "alt": coalesce(profileImage.alt, "Profile photo")
+{
+  "hero": *[_type == "aboutHeroSection" && _id == "aboutHeroSection"][0]{
+    "badgeLabel": coalesce(badgeLabel, "About me"),
+    "headlineStart": coalesce(headlineStart, ""),
+    "headlineEmphasis": coalesce(headlineEmphasis, ""),
+    "headlineEnd": coalesce(headlineEnd, ""),
+    "heroDescription": coalesce(heroDescription, ""),
+    "profileImage": {
+      "url": coalesce(profileImage.asset->url, ""),
+      "alt": coalesce(profileImage.alt, "Profile photo")
+    }
   },
-  "storyTitle": coalesce(storyTitle, ""),
-  "storyContent": coalesce(storyContent, ""),
-  "storyImage": {
-    "url": coalesce(storyImage.asset->url, ""),
-    "alt": coalesce(storyImage.alt, "Story image")
+  "story": *[_type == "aboutStorySection" && _id == "aboutStorySection"][0]{
+    "storyTitle": coalesce(storyTitle, ""),
+    "storyContent": coalesce(storyContent, ""),
+    "storyImage": {
+      "url": coalesce(storyImage.asset->url, ""),
+      "alt": coalesce(storyImage.alt, "Story image")
+    }
   },
-  "philosophyTitle": coalesce(philosophyTitle, ""),
-  "philosophyContent": coalesce(philosophyContent, ""),
-  "values": values[]{
-    "title": coalesce(title, ""),
-    "description": coalesce(description, ""),
-    "icon": coalesce(icon, "sparkles"),
-    _key
+  "values": *[_type == "aboutValuesSection" && _id == "aboutValuesSection"][0]{
+    "philosophyTitle": coalesce(philosophyTitle, ""),
+    "philosophyContent": coalesce(philosophyContent, ""),
+    "values": values[]{
+      "title": coalesce(title, ""),
+      "description": coalesce(description, ""),
+      "icon": coalesce(icon, "sparkles"),
+      _key
+    }
   },
-  "journeyTitle": coalesce(journeyTitle, ""),
-  "journeyItems": journeyItems[]{
-    "year": coalesce(year, ""),
-    "title": coalesce(title, ""),
-    "description": coalesce(description, ""),
-    _key
+  "journey": *[_type == "aboutJourneySection" && _id == "aboutJourneySection"][0]{
+    "journeyTitle": coalesce(journeyTitle, ""),
+    "journeyItems": journeyItems[]{
+      "year": coalesce(year, ""),
+      "title": coalesce(title, ""),
+      "description": coalesce(description, ""),
+      _key
+    }
   },
-  "ctaHeadlineStart": coalesce(ctaHeadlineStart, ""),
-  "ctaHeadlineEmphasis": coalesce(ctaHeadlineEmphasis, ""),
-  "ctaHeadlineEnd": coalesce(ctaHeadlineEnd, ""),
-  "ctaDescription": coalesce(ctaDescription, ""),
-  "ctaButton": {
-    "label": coalesce(ctaButton.label, ""),
-    "href": coalesce(ctaButton.href, "")
+  "cta": *[_type == "aboutCtaSection" && _id == "aboutCtaSection"][0]{
+    "ctaHeadlineStart": coalesce(ctaHeadlineStart, ""),
+    "ctaHeadlineEmphasis": coalesce(ctaHeadlineEmphasis, ""),
+    "ctaHeadlineEnd": coalesce(ctaHeadlineEnd, ""),
+    "ctaDescription": coalesce(ctaDescription, ""),
+    "ctaButton": {
+      "label": coalesce(ctaButton.label, ""),
+      "href": coalesce(ctaButton.href, "")
+    }
   }
 }
 `;
 
 export async function getAboutPageContent(): Promise<AboutPageContent | null> {
-  return cachedSanityFetch(aboutPageQuery, {
+  const data = await cachedSanityFetch<{
+    hero?: {
+      badgeLabel?: string;
+      headlineStart?: string;
+      headlineEmphasis?: string;
+      headlineEnd?: string;
+      heroDescription?: string;
+      profileImage?: {
+        url: string;
+        alt?: string;
+      };
+    };
+    story?: {
+      storyTitle?: string;
+      storyContent?: string;
+      storyImage?: {
+        url: string;
+        alt?: string;
+      };
+    };
+    values?: {
+      philosophyTitle?: string;
+      philosophyContent?: string;
+      values?: AboutValue[];
+    };
+    journey?: {
+      journeyTitle?: string;
+      journeyItems?: AboutJourneyItem[];
+    };
+    cta?: {
+      ctaHeadlineStart?: string;
+      ctaHeadlineEmphasis?: string;
+      ctaHeadlineEnd?: string;
+      ctaDescription?: string;
+      ctaButton?: CtaLink;
+    };
+  }>(aboutPageQuery, {
     tags: ["about-page"],
     revalidate: 12 * 60 * 60,
   });
+
+  if (!data) return null;
+
+  // Flatten the nested structure to match the expected type
+  return {
+    badgeLabel: data.hero?.badgeLabel,
+    headlineStart: data.hero?.headlineStart,
+    headlineEmphasis: data.hero?.headlineEmphasis,
+    headlineEnd: data.hero?.headlineEnd,
+    heroDescription: data.hero?.heroDescription,
+    profileImage: data.hero?.profileImage,
+    storyTitle: data.story?.storyTitle,
+    storyContent: data.story?.storyContent,
+    storyImage: data.story?.storyImage,
+    philosophyTitle: data.values?.philosophyTitle,
+    philosophyContent: data.values?.philosophyContent,
+    values: data.values?.values,
+    journeyTitle: data.journey?.journeyTitle,
+    journeyItems: data.journey?.journeyItems,
+    ctaHeadlineStart: data.cta?.ctaHeadlineStart,
+    ctaHeadlineEmphasis: data.cta?.ctaHeadlineEmphasis,
+    ctaHeadlineEnd: data.cta?.ctaHeadlineEnd,
+    ctaDescription: data.cta?.ctaDescription,
+    ctaButton: data.cta?.ctaButton,
+  };
+}
+
+// My Work Page Types
+export type MyWorkPageContent = {
+  badgeLabel?: string;
+  headline?: string;
+  description?: string;
+};
+
+const myWorkPageQuery = `
+*[_type == "myWorkPage" && _id == "myWorkPage"][0]{
+  "badgeLabel": coalesce(badgeLabel, "Partnerships"),
+  "headline": coalesce(headline, "My best work"),
+  "description": coalesce(description, "")
+}
+`;
+
+export async function getMyWorkPageContent(): Promise<MyWorkPageContent | null> {
+  return cachedSanityFetch(myWorkPageQuery, {
+    tags: ["my-work-page"],
+    revalidate: 12 * 60 * 60,
+  });
+}
+
+// Not Found Page Types
+export type NotFoundPageContent = {
+  badgeLabel?: string;
+  headlineStart?: string;
+  headlineEmphasis?: string;
+  headlineEnd?: string;
+  description?: string;
+  primaryButton?: CtaLink;
+  secondaryButton?: CtaLink;
+  profileImage?: {
+    url: string;
+    alt?: string;
+  };
+  errorNumber?: string;
+  errorSubtitle?: string;
+};
+
+const notFoundPageQuery = `
+{
+  "content": *[_type == "notFoundContentSection" && _id == "notFoundContentSection"][0]{
+    "badgeLabel": coalesce(badgeLabel, "404 — Not found"),
+    "headlineStart": coalesce(headlineStart, "This page went"),
+    "headlineEmphasis": coalesce(headlineEmphasis),
+    "headlineEnd": coalesce(headlineEnd),
+    "description": coalesce(description, "The link might be broken, or the page may have been moved. Let's get you back to something good.")
+  },
+  "buttons": *[_type == "notFoundButtonsSection" && _id == "notFoundButtonsSection"][0]{
+    "primaryButton": {
+      "label": coalesce(primaryButton.label, "Back home"),
+      "href": coalesce(primaryButton.href, "/")
+    },
+    "secondaryButton": {
+      "label": coalesce(secondaryButton.label, "See my work"),
+      "href": coalesce(secondaryButton.href, "/my-work")
+    }
+  },
+  "visual": *[_type == "notFoundVisualSection" && _id == "notFoundVisualSection"][0]{
+    "profileImage": {
+      "url": coalesce(profileImage.asset->url, ""),
+      "alt": coalesce(profileImage.alt, "Profile photo")
+    },
+    "errorNumber": coalesce(errorNumber, "404"),
+    "errorSubtitle": coalesce(errorSubtitle, "Lost, but still looking good.")
+  }
+}
+`;
+
+export async function getNotFoundPageContent(): Promise<NotFoundPageContent | null> {
+  const data = await cachedSanityFetch<{
+    content?: {
+      badgeLabel?: string;
+      headlineStart?: string;
+      headlineEmphasis?: string;
+      headlineEnd?: string;
+      description?: string;
+    };
+    buttons?: {
+      primaryButton?: CtaLink;
+      secondaryButton?: CtaLink;
+    };
+    visual?: {
+      profileImage?: {
+        url: string;
+        alt?: string;
+      };
+      errorNumber?: string;
+      errorSubtitle?: string;
+    };
+  }>(notFoundPageQuery, {
+    tags: ["not-found-page"],
+    revalidate: 12 * 60 * 60,
+  });
+
+  if (!data) return null;
+
+  // Flatten the nested structure to match the expected type
+  return {
+    badgeLabel: data.content?.badgeLabel,
+    headlineStart: data.content?.headlineStart,
+    headlineEmphasis: data.content?.headlineEmphasis,
+    headlineEnd: data.content?.headlineEnd,
+    description: data.content?.description,
+    primaryButton: data.buttons?.primaryButton,
+    secondaryButton: data.buttons?.secondaryButton,
+    profileImage: data.visual?.profileImage,
+    errorNumber: data.visual?.errorNumber,
+    errorSubtitle: data.visual?.errorSubtitle,
+  };
 }

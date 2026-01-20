@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
     "theme-settings",
     "client-results",
     "about-page",
+    "my-work-page",
   ];
 
   tagsToRevalidate.forEach((tag) => {

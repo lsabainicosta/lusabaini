@@ -1,102 +1,42 @@
 import Image from "next/image";
 import Reveal from "@/components/motion/Reveal";
 import { Badge } from "@/components/ui/badge";
-import { getClientResults } from "@/lib/queries";
+import { getClientResults, getMyWorkPageContent } from "@/lib/queries";
 import { createSlug } from "@/lib/utils";
 import TransitionLink from "@/components/motion/TransitionLink";
 
-function Stars({ count = 5 }: { count?: number }) {
-  return (
-    <div
-      className="flex items-center gap-1"
-      aria-label={`${count} star rating`}
-    >
-      {Array.from({ length: count }).map((_, i) => (
-        <svg
-          key={i}
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className="text-[#f5a524]"
-          aria-hidden="true"
-        >
-          <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-        </svg>
-      ))}
-    </div>
-  );
-}
-
-function AvatarRow({ urls }: { urls: string[] }) {
-  const safe = urls.filter(Boolean).slice(0, 5);
-  if (safe.length === 0) return null;
-
-  return (
-    <div className="flex -space-x-2">
-      {safe.map((url, idx) => (
-        <div
-          key={`${url}-${idx}`}
-          className="relative h-8 w-8 overflow-hidden rounded-full border border-black/10 bg-white/60"
-        >
-          <Image
-            src={url}
-            alt=""
-            fill
-            className="object-cover"
-            sizes="32px"
-            priority={false}
-          />
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export default async function CaseStudiesPage() {
   const results = await getClientResults();
+  const pageContent = await getMyWorkPageContent();
 
   return (
     <>
       <section className="w-full pt-20 pb-10">
         <div className="max-w-6xl mx-auto px-6">
           <div className="max-w-3xl flex flex-col gap-7">
-            <Reveal>
-              <Badge className="w-fit px-4 py-1 bg-black/5 rounded-lg text-xs font-semibold uppercase tracking-wider text-black/60 border-transparent">
-                Partnerships
-              </Badge>
-            </Reveal>
+            {pageContent?.badgeLabel && (
+              <Reveal>
+                <Badge className="w-fit px-4 py-1 bg-black/5 rounded-lg text-xs font-semibold uppercase tracking-wider text-black/60 border-transparent">
+                  {pageContent.badgeLabel}
+                </Badge>
+              </Reveal>
+            )}
 
-            <Reveal>
-              <h1 className="text-6xl sm:text-7xl lg:text-8xl font-medium tracking-[-0.04em] leading-[0.9] text-black">
-                My best work
-              </h1>
-            </Reveal>
+            {pageContent?.headline && (
+              <Reveal>
+                <h1 className="text-6xl sm:text-7xl lg:text-8xl font-medium tracking-[-0.04em] leading-[0.9] text-black">
+                  {pageContent.headline}
+                </h1>
+              </Reveal>
+            )}
 
-            <Reveal>
-              <p className="text-xl text-black/60 max-w-2xl font-sans leading-relaxed">
-                See how we&apos;ve helped growing businesses transform their
-                social media from a time drain into their most powerful growth
-                engine. Every strategy is custom-built, every result is
-                measurable.
-              </p>
-            </Reveal>
-
-            <Reveal>
-              <div className="flex items-center gap-4 pt-2">
-                <AvatarRow
-                  urls={(results ?? [])
-                    .map((r) => r.image?.url || "")
-                    .filter(Boolean)}
-                />
-                <div className="flex items-center gap-3">
-                  <Stars />
-                  <div className="text-sm font-medium text-black/60">
-                    Grown over 176+ creators
-                  </div>
-                </div>
-              </div>
-            </Reveal>
+            {pageContent?.description && (
+              <Reveal>
+                <p className="text-xl text-black/60 max-w-2xl font-sans leading-relaxed">
+                  {pageContent.description}
+                </p>
+              </Reveal>
+            )}
           </div>
         </div>
       </section>
@@ -134,7 +74,7 @@ export default async function CaseStudiesPage() {
 
                           {overlay ? (
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="text-white text-4xl sm:text-5xl font-serif tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
+                              <div className="text-white text-4xl sm:text-5xl font-serif tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] max-w-md text-center">
                                 {overlay}
                               </div>
                             </div>

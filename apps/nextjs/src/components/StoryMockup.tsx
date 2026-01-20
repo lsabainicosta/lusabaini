@@ -5,8 +5,6 @@ import { Heart } from "lucide-react";
 import Image from "next/image";
 import { motion, useMotionValue, useTransform } from "motion/react";
 
-import lulu from "@/assets/lulu.webp";
-
 type StoryInput = {
   url?: string;
   title?: string;
@@ -14,13 +12,28 @@ type StoryInput = {
 
 type Story = { src: string; type: "video" };
 
+type StoryUserInfo = {
+  username?: string;
+  timeAgo?: string;
+  profileImage?: {
+    url?: string;
+    alt?: string;
+  };
+};
+
 const defaultStories: Story[] = [
   { src: "/videos/vid1.mp4", type: "video" },
   { src: "/videos/vid2.mp4", type: "video" },
   { src: "/videos/vid3.mp4", type: "video" },
 ];
 
-const StoryMockup = ({ stories }: { stories?: StoryInput[] }) => {
+const StoryMockup = ({ 
+  stories,
+  userInfo 
+}: { 
+  stories?: StoryInput[];
+  userInfo?: StoryUserInfo;
+}) => {
   const storyItems: Story[] = useMemo(() => {
     const fromSanity =
       stories?.map((s) => ({ src: s.url || "", type: "video" as const })) ?? [];
@@ -268,25 +281,34 @@ const StoryMockup = ({ stories }: { stories?: StoryInput[] }) => {
           </div>
 
           {/* User info */}
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-linear-to-tr from-yellow-400 via-pink-500 to-purple-600 p-[2px]">
-              <div className="w-full h-full rounded-full border-2 border-black bg-white overflow-hidden relative">
-                <Image
-                  src={lulu}
-                  alt="Luiza Sabaini Costa"
-                  width={20}
-                  height={20}
-                  priority={false}
-                />
+          {(userInfo?.username || userInfo?.profileImage?.url) && (
+            <div className="flex items-center gap-3">
+              {userInfo.profileImage?.url && (
+                <div className="w-8 h-8 rounded-full bg-linear-to-tr from-yellow-400 via-pink-500 to-purple-600 p-[2px]">
+                  <div className="w-full h-full rounded-full border-2 border-black bg-white overflow-hidden relative">
+                    <Image
+                      src={userInfo.profileImage.url}
+                      alt={userInfo.profileImage.alt || userInfo.username || "Profile"}
+                      fill
+                      className="object-cover"
+                      sizes="32px"
+                      priority={false}
+                    />
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                {userInfo.username && (
+                  <span className="text-white text-sm font-semibold">
+                    {userInfo.username}
+                  </span>
+                )}
+                {userInfo.timeAgo && (
+                  <span className="text-white/60 text-xs">{userInfo.timeAgo}</span>
+                )}
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-white text-sm font-semibold">
-                lusabaini
-              </span>
-              <span className="text-white/60 text-xs">6h</span>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Bottom gradient */}
