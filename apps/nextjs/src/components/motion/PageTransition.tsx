@@ -5,21 +5,20 @@ import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
 import { RouteTransitionProvider } from "@/components/motion/RouteTransitionContext";
 import { useTransitionNavigation } from "@/components/motion/TransitionContext";
-import {
-  EASE_OUT,
-  FADE_IN_DURATION,
-  FADE_IN_Y,
-} from "@/components/motion/fade";
+import { EASE_OUT } from "@/components/motion/fade";
 
 type Props = {
   children: React.ReactNode;
   className?: string;
 };
 
-// Module-level flag that persists across route changes.
-// Prevents the enter animation from running on initial page load/refresh
-// (which causes a hydration shift), but still allows it on client-side navigation.
+// Page transition specific values
+const PAGE_ENTER_DURATION = 0.45;
+const PAGE_TRANSITION_Y = 20;
+
+// Module-level tracking that persists across route changes.
 let hasInitialRenderCompleted = false;
+let lastRenderedPathname: string | null = null;
 
 export default function PageTransition({ children, className }: Props) {
   const pathname = usePathname();
@@ -27,9 +26,15 @@ export default function PageTransition({ children, className }: Props) {
     useTransitionNavigation();
   const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
   const [hasMounted, setHasMounted] = React.useState(false);
-
-  // Capture whether this is the initial render before the effect runs
-  const isInitialRender = !hasInitialRenderCompleted;
+  
+  // Check if this is a new page navigation (pathname changed)
+  // Capture this before updating lastRenderedPathname
+  const isNewPage = lastRenderedPathname !== null && lastRenderedPathname !== pathname;
+  
+  // Update tracking after capturing the check
+  React.useEffect(() => {
+    lastRenderedPathname = pathname;
+  }, [pathname]);
 
   React.useEffect(() => {
     const mq = window.matchMedia?.("(prefers-reduced-motion: reduce)");
@@ -45,26 +50,31 @@ export default function PageTransition({ children, className }: Props) {
   React.useEffect(() => {
     setHasMounted(true);
     hasInitialRenderCompleted = true;
-  }, []);
+    if (lastRenderedPathname === null) {
+      lastRenderedPathname = pathname;
+    }
+  }, [pathname]);
 
   if (prefersReducedMotion) {
     return <div className={className}>{children}</div>;
   }
 
   const isExitingThisPage = isExiting && exitFromPathname === pathname;
+  
+  // Determine if we should animate entry
+  // Skip on initial page load, but animate on client-side navigation
+  const shouldAnimateEntry = hasInitialRenderCompleted && isNewPage;
 
   return (
     <motion.div
       key={pathname}
       className={className}
-      // Skip enter animation on initial page load to prevent hydration shift.
-      // `initial={false}` tells Framer Motion to start at the `animate` state.
-      initial={isInitialRender ? false : { opacity: 0, y: FADE_IN_Y }}
+      initial={shouldAnimateEntry ? { opacity: 0, y: PAGE_TRANSITION_Y } : false}
       animate={
         isExitingThisPage
           ? {
               opacity: 0,
-              y: -FADE_IN_Y,
+              y: -PAGE_TRANSITION_Y,
               transition: {
                 duration: exitDurationMs / 1000,
                 ease: EASE_OUT,
@@ -73,12 +83,14 @@ export default function PageTransition({ children, className }: Props) {
           : {
               opacity: 1,
               y: 0,
-              transition: { duration: FADE_IN_DURATION, ease: EASE_OUT },
+              transition: {
+                duration: shouldAnimateEntry ? PAGE_ENTER_DURATION : 0,
+                ease: EASE_OUT,
+              },
             }
       }
       style={{
-        willChange: "transform, opacity",
-        transform: "translateZ(0)",
+        willChange: isExitingThisPage || shouldAnimateEntry ? "transform, opacity" : undefined,
         pointerEvents: isExitingThisPage ? "none" : undefined,
       }}
     >

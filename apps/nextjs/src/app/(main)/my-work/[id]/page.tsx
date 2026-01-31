@@ -1,9 +1,14 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { getClientResultById, getClientResultBySlug, getClientResults } from "@/lib/queries";
+import {
+  getClientResultById,
+  getClientResultBySlug,
+  getClientResults,
+} from "@/lib/queries";
 import { createSlug } from "@/lib/utils";
 import TransitionLink from "@/components/motion/TransitionLink";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import BackButton from "@/components/BackButton";
+import { ArrowRight } from "lucide-react";
 import SocialLinks from "@/components/SocialLinks";
 
 type Props = {
@@ -19,13 +24,13 @@ export async function generateStaticParams() {
 
 export default async function WorkDetailPage({ params }: Props) {
   const { id } = await params;
-  
+
   // Try to find by slug first, then by _id
   let result = await getClientResultBySlug(id);
   if (!result) {
     result = await getClientResultById(id);
   }
-  
+
   if (!result) {
     notFound();
   }
@@ -33,12 +38,10 @@ export default async function WorkDetailPage({ params }: Props) {
   // Get all results for navigation
   const allResults = await getClientResults();
   const currentIndex = allResults.findIndex((r) => r._id === result!._id);
-  const nextResult = currentIndex >= 0 && currentIndex < allResults.length - 1 
-    ? allResults[currentIndex + 1] 
-    : null;
-  const prevResult = currentIndex > 0 
-    ? allResults[currentIndex - 1] 
-    : null;
+  const nextResult =
+    currentIndex >= 0 && currentIndex < allResults.length - 1
+      ? allResults[currentIndex + 1]
+      : null;
 
   const title = result.clientName || "Work";
   const description = result.description || "";
@@ -78,13 +81,10 @@ export default async function WorkDetailPage({ params }: Props) {
             <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
 
             {/* Back Button */}
-            <TransitionLink
-              href="/my-work"
-              className="absolute top-6 left-6 z-10 rounded-lg bg-[#f9f3eb]/90 backdrop-blur-sm px-4 py-2 text-sm font-medium text-black transition-opacity hover:opacity-80"
-            >
-              <ArrowLeft className="inline-block mr-2 h-4 w-4" />
-              Back
-            </TransitionLink>
+            <BackButton
+              className="absolute top-6 left-6 z-10 rounded-lg bg-[#f9f3eb]/90 backdrop-blur-sm px-4 py-2 text-sm font-medium text-black transition-opacity hover:opacity-80 cursor-pointer"
+              fallbackHref="/my-work"
+            />
 
             {/* Navigation Arrow */}
             {nextResult && (
@@ -120,7 +120,9 @@ export default async function WorkDetailPage({ params }: Props) {
           <div className="flex flex-wrap items-start justify-between gap-8 md:gap-12 bg-white/35 border border-black/10 rounded-[1rem] px-10 py-6">
             {/* Category */}
             <div>
-              <div className="text-sm font-medium text-black/60 mb-2">Category</div>
+              <div className="text-sm font-medium text-black/60 mb-2">
+                Category
+              </div>
               <div className="text-2xl font-semibold text-black">
                 {category || "—"}
               </div>
@@ -128,7 +130,9 @@ export default async function WorkDetailPage({ params }: Props) {
 
             {/* Platforms/Socials */}
             <div>
-              <div className="text-sm font-medium text-black/60 mb-2">Socials</div>
+              <div className="text-sm font-medium text-black/60 mb-2">
+                Socials
+              </div>
               {result.socials && result.socials.length > 0 ? (
                 <SocialLinks socials={result.socials} />
               ) : (
@@ -149,12 +153,14 @@ export default async function WorkDetailPage({ params }: Props) {
       {result.additionalVideos && result.additionalVideos.length > 0 && (
         <section className="w-full pb-24">
           <div className="max-w-6xl mx-auto px-6">
-            <h2 className="text-3xl font-medium tracking-tight mb-8">Related Content</h2>
+            <h2 className="text-3xl font-medium tracking-tight mb-8">
+              Related Content
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {result.additionalVideos.map((video, index) => (
-                <div 
+                <div
                   key={video._key || index}
-                  className="relative aspect-[9/16] md:aspect-video w-full overflow-hidden rounded-2xl border-4 border-white shadow-lg bg-black/5"
+                  className="relative aspect-9/16 md:aspect-video w-full overflow-hidden rounded-2xl border-4 border-white shadow-lg bg-black/5"
                 >
                   <video
                     src={video.url}
