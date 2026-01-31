@@ -25,21 +25,20 @@ export default function AboutCta({
   const { disableEnterAnimations } = useRouteTransition();
   const { openModal } = useContactModal();
   const [disableEnterAnimationsAtMount] = React.useState(
-    () => disableEnterAnimations
+    () => disableEnterAnimations,
   );
 
   const titleStart = headlineStart || "Let's create something";
   const titleEmphasis = headlineEmphasis || "incredible";
   const titleEnd = headlineEnd || "together.";
-  const body =
-    description || "Ready to transform your social media presence?";
+  const body = description || "Ready to transform your social media presence?";
   const ctaLabel = ctaButton?.label || "Get in touch";
 
   return (
     <section className="w-full py-20 md:py-28">
       <div className="max-w-4xl mx-auto px-6">
         <motion.div
-          className="relative rounded-[2.5rem] bg-gradient-to-br from-[var(--brand-color)] via-[var(--brand-soft)] to-[var(--brand-light)] p-10 md:p-14 overflow-hidden"
+          className="relative rounded-[2.5rem] bg-linear-to-br from-(--brand-color) via-(--brand-soft) to-(--brand-light) p-10 md:p-14 overflow-hidden"
           {...(disableEnterAnimationsAtMount
             ? { initial: false }
             : {
@@ -55,7 +54,7 @@ export default function AboutCta({
         >
           {/* Background decorations */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-[var(--brand-dark)]/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-(--brand-dark)/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
 
           {/* Content */}
           <div className="relative flex flex-col items-center text-center gap-6">
