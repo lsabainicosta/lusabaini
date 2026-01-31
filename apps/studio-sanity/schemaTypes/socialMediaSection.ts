@@ -45,17 +45,17 @@ export const socialMediaSection = defineType({
               type: 'string',
               validation: (Rule) =>
                 Rule.required().custom((value, context) => {
-                  if (!value) return true;
+                  if (!value) return true
                   // Allow mailto: links for email icons
                   if (typeof value === 'string' && value.startsWith('mailto:')) {
-                    return true;
+                    return true
                   }
                   // Validate as URL for other cases
                   try {
-                    new URL(value);
-                    return true;
+                    new URL(value)
+                    return true
                   } catch {
-                    return 'Must be a valid URL or mailto: link';
+                    return 'Must be a valid URL or mailto: link'
                   }
                 }),
             }),
@@ -69,7 +69,8 @@ export const socialMediaSection = defineType({
               name: 'emailSubject',
               title: 'Email Subject',
               type: 'string',
-              description: 'Optional default subject for email links. Only used when icon is "Email".',
+              description:
+                'Optional default subject for email links. Only used when icon is "Email".',
               hidden: ({parent}) => parent?.icon !== 'email',
             }),
             defineField({
@@ -77,7 +78,8 @@ export const socialMediaSection = defineType({
               title: 'Email Body',
               type: 'text',
               rows: 3,
-              description: 'Optional default body text for email links. Only used when icon is "Email".',
+              description:
+                'Optional default body text for email links. Only used when icon is "Email".',
               hidden: ({parent}) => parent?.icon !== 'email',
             }),
           ],

@@ -723,3 +723,76 @@ export async function getNotFoundPageContent(): Promise<NotFoundPageContent | nu
     errorSubtitle: data.visual?.errorSubtitle,
   };
 }
+
+// Linktree Page Types
+export type LinktreeLink = {
+  label: string;
+  url: string;
+  icon?: string;
+  _key?: string;
+};
+
+export type LinktreePageContent = {
+  name?: string;
+  username?: string;
+  bio?: string;
+  profileImage?: {
+    url: string;
+    alt?: string;
+  };
+  links?: LinktreeLink[];
+  showSocials?: boolean;
+  socials?: SocialLink[];
+};
+
+const linktreePageQuery = `
+{
+  "page": *[_type == "linktreePage" && _id == "linktreePage"][0]{
+    "name": coalesce(name, ""),
+    "username": coalesce(username, ""),
+    "bio": coalesce(bio, ""),
+    "profileImage": {
+      "url": coalesce(profileImage.asset->url, ""),
+      "alt": coalesce(profileImage.alt, name, "Profile")
+    },
+    "links": links[]{
+      "label": coalesce(label, ""),
+      "url": coalesce(url, ""),
+      "icon": coalesce(icon, "link"),
+      _key
+    },
+    "showSocials": coalesce(showSocials, true)
+  },
+  "socials": *[_type == "socialMediaSection" && _id == "socialMediaSection"][0].socials[]{
+    icon,
+    "href": coalesce(href, ""),
+    "label": coalesce(label, ""),
+    "emailSubject": coalesce(emailSubject, ""),
+    "emailBody": coalesce(emailBody, ""),
+    _key
+  }
+}
+`;
+
+export async function getLinktreePageContent(): Promise<LinktreePageContent | null> {
+  const data = await cachedSanityFetch<{
+    page?: {
+      name?: string;
+      bio?: string;
+      profileImage?: { url: string; alt?: string };
+      links?: LinktreeLink[];
+      showSocials?: boolean;
+    };
+    socials?: SocialLink[];
+  }>(linktreePageQuery, {
+    tags: ["linktree-page"],
+    revalidate: 12 * 60 * 60,
+  });
+
+  if (!data?.page) return null;
+
+  return {
+    ...data.page,
+    socials: data.page.showSocials ? data.socials : undefined,
+  };
+}

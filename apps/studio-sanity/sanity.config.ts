@@ -28,6 +28,7 @@ const singletonTypes = new Set([
   'notFoundContentSection',
   'notFoundButtonsSection',
   'notFoundVisualSection',
+  'linktreePage',
 ])
 
 function WebhookTriggerTool() {
@@ -130,6 +131,9 @@ export default defineConfig({
                       .child(S.document().schemaType('notFoundVisualSection').documentId('notFoundVisualSection')),
                   ])
               ),
+            S.listItem()
+              .title('Linktree Page')
+              .child(S.document().schemaType('linktreePage').documentId('linktreePage')),
             S.divider(),
             ...S.documentTypeListItems().filter(
               (listItem: ListItemBuilder) => !singletonTypes.has(listItem.getId() as string),

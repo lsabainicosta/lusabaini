@@ -146,7 +146,7 @@ export default function PrivacyPolicyPage() {
                       Data retention
                     </h2>
                     <p>
-                      Analytics data is retained according to Google Analytics’
+                      Analytics data is retained according to Google Analytics'
                       default retention settings. Contact form messages are kept
                       only as long as necessary to respond.
                     </p>
@@ -178,7 +178,7 @@ export default function PrivacyPolicyPage() {
                       One important implementation note
                     </h2>
                     <p>
-                      If you’re using Google Analytics 4, do at least one of
+                      If you're using Google Analytics 4, do at least one of
                       these:
                     </p>
                     <ul className="list-disc pl-6 space-y-1">

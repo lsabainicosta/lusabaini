@@ -1,7 +1,8 @@
 "use client";
 import { useCallback, useEffect, useState, type ComponentType } from "react";
 import { motion } from "motion/react";
-import { BadgeCheck, Instagram, Mail, Music2, Share } from "lucide-react";
+import { BadgeCheck, Mail, Share } from "lucide-react";
+import { SiInstagram, SiTiktok } from "react-icons/si";
 import Image from "next/image";
 import { sanityImageLoader } from "../lib/sanityImageLoader";
 import {
@@ -27,8 +28,8 @@ const iconMap: Record<
   ComponentType<{ className?: string; strokeWidth?: number }>
 > = {
   mail: Mail,
-  tiktok: Music2,
-  instagram: Instagram,
+  tiktok: SiTiktok,
+  instagram: SiInstagram,
   share: Share,
 };
 

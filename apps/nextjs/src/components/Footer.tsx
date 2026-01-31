@@ -101,7 +101,7 @@ export default function Footer({
   const privacyHref = "/privacy-policy";
   const normalizedLegalLinks = [...resolvedLegalLinks];
   const hasPrivacyLink = normalizedLegalLinks.some(
-    (l) => (l.href ?? "").trim() === privacyHref
+    (l) => (l.href ?? "").trim() === privacyHref,
   );
 
   if (!hasPrivacyLink) {
@@ -116,7 +116,7 @@ export default function Footer({
     if (bottomLegalLinks.length <= 3) return bottomLegalLinks;
     const firstThree = bottomLegalLinks.slice(0, 3);
     const privacyInFirstThree = firstThree.some(
-      (l) => (l.href ?? "").trim() === privacyHref
+      (l) => (l.href ?? "").trim() === privacyHref,
     );
     if (privacyInFirstThree) return firstThree;
     return [...firstThree.slice(0, 2), defaultLegalLinks[0]];

@@ -3,12 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 import "./globals.css";
 import PwaRegister from "@/components/PwaRegister";
-import PageTransition from "@/components/motion/PageTransition";
 import LenisScroll from "@/components/motion/LenisScroll";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import { getShellContent, getThemeSettings } from "@/lib/queries";
-import { TransitionProvider } from "@/components/motion/TransitionContext";
+import { getThemeSettings } from "@/lib/queries";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,7 +16,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteDomain = process.env.NEXT_PUBLIC_SITE_DOMAIN;
+
 export const metadata: Metadata = {
+  metadataBase: siteDomain ? new URL(`https://${siteDomain}`) : undefined,
   title: "Luiza Sabaini Costa",
   description:
     "Short‑form video, strategy, and hands‑on execution to help brands grow on social. Portfolio, services, and client results by Luiza Sabaini Costa.",
@@ -60,19 +59,11 @@ export default async function RootLayout({
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
 
-  const [{ siteSettings, footer }, theme] = await Promise.all([
-    getShellContent(),
-    getThemeSettings(),
-  ]);
+  const theme = await getThemeSettings();
   const brandColor = theme?.brandColor || "#f9f3eb";
   const brandLight = shiftHexColor(brandColor, 28);
   const brandDark = shiftHexColor(brandColor, -35);
   const brandSoft = shiftHexColor(brandColor, 55);
-  
-  // Centralized settings from Site Settings
-  const mainNavigation = siteSettings?.mainNavigation;
-  const ctaButton = siteSettings?.ctaButton;
-  const socials = siteSettings?.socials;
 
   return (
     <html
@@ -90,25 +81,7 @@ export default async function RootLayout({
       >
         <PwaRegister />
         <LenisScroll />
-        <TransitionProvider>
-          <Header navLinks={mainNavigation} cta={ctaButton} />
-          <PageTransition>
-            <main className="relative min-h-screen w-full overflow-x-hidden pt-16">
-              {children}
-              <Footer
-                brandLabel={footer?.brandLabel}
-                headlineStart={footer?.headlineStart}
-                headlineEmphasis={footer?.headlineEmphasis}
-                headlineEnd={footer?.headlineEnd}
-                description={footer?.description}
-                socials={socials}
-                navigationLinks={mainNavigation}
-                legalLinks={footer?.legalLinks}
-                cta={ctaButton}
-              />
-            </main>
-          </PageTransition>
-        </TransitionProvider>
+        {children}
       </body>
       {gaId ? <GoogleAnalytics gaId={gaId} /> : null}
     </html>
