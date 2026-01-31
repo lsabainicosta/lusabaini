@@ -100,10 +100,15 @@ export function TransitionProvider({
 
 export function useTransitionNavigation() {
   const ctx = React.useContext(TransitionContext);
+  // Return a fallback when outside provider (e.g., during static prerendering of not-found page)
   if (!ctx) {
-    throw new Error(
-      "useTransitionNavigation must be used within <TransitionProvider>"
-    );
+    return {
+      isExiting: false,
+      exitFromPathname: null,
+      exitToHref: null,
+      exitDurationMs: 280,
+      navigate: null, // Signal that transition navigation is unavailable
+    } as const;
   }
   return ctx;
 }

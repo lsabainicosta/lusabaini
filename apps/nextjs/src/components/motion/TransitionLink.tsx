@@ -61,7 +61,8 @@ export default function TransitionLink({
         if (target === "_blank") return;
         if (isModifiedEvent(e)) return;
 
-        if (shouldInterceptHref(href)) {
+        // When navigate is null (outside TransitionProvider), use default Link behavior
+        if (navigate && shouldInterceptHref(href)) {
           e.preventDefault();
           navigate(href as string);
         }
