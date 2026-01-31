@@ -59,8 +59,8 @@ export default async function CaseStudiesPage() {
                 <Reveal key={result._id}>
                   <TransitionLink href={href} className="block group">
                     <article>
-                      <div className="bg-white/35 border border-black/10 rounded-[2.5rem] p-3 sm:p-4">
-                        <div className="relative overflow-hidden rounded-[2rem] aspect-16/10 bg-black/5">
+                      <div className="rounded-[2.5rem] overflow-hidden border-4 border-white shadow-2xl">
+                        <div className="relative aspect-16/10 bg-black/5">
                           {result.image?.url ? (
                             <Image
                               src={result.image.url}

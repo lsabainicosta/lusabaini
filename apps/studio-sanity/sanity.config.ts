@@ -16,7 +16,6 @@ const singletonTypes = new Set([
   'footerSection',
   'heroSection',
   'brandLogosSection',
-  'servicesSection',
   'aboutPage',
   'aboutHeroSection',
   'aboutStorySection',
@@ -83,9 +82,6 @@ export default defineConfig({
                   S.listItem()
                     .title('Brand Logos')
                     .child(S.document().schemaType('brandLogosSection').documentId('brandLogosSection')),
-                  S.listItem()
-                    .title('Services')
-                    .child(S.document().schemaType('servicesSection').documentId('servicesSection')),
                 ])
             ),
             S.listItem()

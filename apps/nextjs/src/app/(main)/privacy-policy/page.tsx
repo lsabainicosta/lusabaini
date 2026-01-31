@@ -146,9 +146,9 @@ export default function PrivacyPolicyPage() {
                       Data retention
                     </h2>
                     <p>
-                      Analytics data is retained according to Google Analytics'
-                      default retention settings. Contact form messages are kept
-                      only as long as necessary to respond.
+                      Analytics data is retained according to Google
+                      Analytics&apos; default retention settings. Contact form
+                      messages are kept only as long as necessary to respond.
                     </p>
                   </div>
 
@@ -170,41 +170,6 @@ export default function PrivacyPolicyPage() {
                       If you have questions about this privacy policy, you can
                       contact me via the contact form or social links on this
                       website.
-                    </p>
-                  </div>
-
-                  <div className="space-y-3 rounded-2xl border border-black/10 bg-white/50 backdrop-blur px-5 py-4">
-                    <h2 className="text-xl sm:text-2xl font-medium tracking-[-0.03em] text-black">
-                      One important implementation note
-                    </h2>
-                    <p>
-                      If you're using Google Analytics 4, do at least one of
-                      these:
-                    </p>
-                    <ul className="list-disc pl-6 space-y-1">
-                      <li>Enable IP anonymisation (recommended)</li>
-                      <li>Or set a short data retention period</li>
-                    </ul>
-                    <p>
-                      This keeps things clean and GDPR-safe for a personal site.
-                    </p>
-                  </div>
-
-                  <div className="space-y-3">
-                    <h2 className="text-2xl sm:text-3xl font-medium tracking-[-0.03em] text-black">
-                      Bottom line
-                    </h2>
-                    <p>This policy is:</p>
-                    <ul className="list-disc pl-6 space-y-1">
-                      <li>Honest</li>
-                      <li>Minimal</li>
-                      <li>Personal (not agency boilerplate)</li>
-                      <li>Appropriate for GA + contact form</li>
-                    </ul>
-                    <p>
-                      If you want next, I can write a very minimal cookie banner
-                      text, or confirm whether you legally need one based on
-                      your setup.
                     </p>
                   </div>
                 </div>

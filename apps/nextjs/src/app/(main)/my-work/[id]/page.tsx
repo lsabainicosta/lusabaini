@@ -50,7 +50,7 @@ export default async function WorkDetailPage({ params }: Props) {
       {/* Hero Section */}
       <section className="w-full pt-20 pb-6">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="relative h-[500px] w-full overflow-hidden rounded-[2.5rem] border-8 border-white shadow-2xl">
+          <div className="relative h-[500px] w-full overflow-hidden rounded-[2.5rem] border-4 border-white shadow-2xl">
             {/* Background Image/Video */}
             {result.video?.url ? (
               <video

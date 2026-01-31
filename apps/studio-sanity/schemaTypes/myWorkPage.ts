@@ -11,7 +11,7 @@ export const myWorkPage = defineType({
     badgeLabel: 'Partnerships',
     headline: 'My best work',
     description:
-      "See how we've helped growing businesses transform their social media from a time drain into their most powerful growth engine. Every strategy is custom-built, every result is measurable.",
+      "See how I've helped growing businesses transform their social media from a time drain into their most powerful growth engine. Every strategy is custom-built, every result is measurable.",
   },
   fields: [
     defineField({

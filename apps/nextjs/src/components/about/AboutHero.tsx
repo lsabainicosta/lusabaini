@@ -30,7 +30,7 @@ export default function AboutHero({
   const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
   const { disableEnterAnimations } = useRouteTransition();
   const [disableEnterAnimationsAtMount] = React.useState(
-    () => disableEnterAnimations
+    () => disableEnterAnimations,
   );
 
   React.useEffect(() => {
@@ -86,14 +86,14 @@ export default function AboutHero({
           {/* Profile Image */}
           {imageUrl ? (
             <motion.div
-              className="flex-shrink-0"
+              className="shrink-0"
               initial={shouldDisableMountAnimation ? false : "hidden"}
               animate={shouldDisableMountAnimation ? undefined : "show"}
               variants={fadeInUpVariants({ y: 28, delay: 0.18 })}
             >
               <div className="relative w-[320px] h-[400px] lg:w-[380px] lg:h-[480px]">
-                <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-[var(--brand-color)] to-[var(--brand-dark)] opacity-20 blur-2xl" />
-                <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden border-4 border-white/60 shadow-2xl">
+                <div className="absolute inset-0 rounded-[2.5rem] bg-linear-to-br from-(--brand-color) to-(--brand-dark) opacity-20 blur-2xl" />
+                <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden border-4 border-white shadow-2xl">
                   <Image
                     src={imageUrl}
                     alt={imageAlt}
@@ -107,14 +107,14 @@ export default function AboutHero({
             </motion.div>
           ) : (
             <motion.div
-              className="flex-shrink-0"
+              className="shrink-0"
               initial={shouldDisableMountAnimation ? false : "hidden"}
               animate={shouldDisableMountAnimation ? undefined : "show"}
               variants={fadeInUpVariants({ y: 28, delay: 0.18 })}
             >
               <div className="relative w-[320px] h-[400px] lg:w-[380px] lg:h-[480px]">
-                <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-[var(--brand-color)] to-[var(--brand-dark)] opacity-30" />
-                <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden border-4 border-white/60 shadow-2xl bg-gradient-to-br from-[var(--brand-soft)] to-[var(--brand-color)] flex items-center justify-center">
+                <div className="absolute inset-0 rounded-[2.5rem] bg-linear-to-br from-(--brand-color) to-(--brand-dark) opacity-30" />
+                <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden border-4 border-white shadow-2xl bg-linear-to-br from-(--brand-soft) to-(--brand-color) flex items-center justify-center">
                   <span className="text-8xl font-serif italic text-white/40">
                     L
                   </span>

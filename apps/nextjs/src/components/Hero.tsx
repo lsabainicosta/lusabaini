@@ -134,7 +134,7 @@ const Hero = ({
           <StoryMockup stories={carouselVideos} userInfo={storyUserInfo} />
         ) : (
           <div className="relative w-[350px]">
-            <div className="relative aspect-9/16 rounded-[2.5rem] overflow-hidden border-8 border-white shadow-2xl bg-black/5" />
+            <div className="relative aspect-9/16 rounded-[2.5rem] overflow-hidden border-4 border-white shadow-2xl bg-black/5" />
           </div>
         )}
 

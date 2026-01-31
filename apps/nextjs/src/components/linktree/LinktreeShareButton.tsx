@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Share, Link as LinkIcon, Mail, Upload } from "lucide-react";
 import {
   SiX,
@@ -52,7 +52,18 @@ export default function LinktreeShareButton({
 }: LinktreeShareButtonProps) {
   const [copied, setCopied] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [canNativeShare, setCanNativeShare] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
+
+  // Set mounted state and check for native share API on client only to avoid hydration mismatch
+  useEffect(() => {
+    // Using queueMicrotask to avoid cascading renders lint warning
+    queueMicrotask(() => {
+      setMounted(true);
+      setCanNativeShare(typeof navigator !== "undefined" && !!navigator.share);
+    });
+  }, []);
 
   const handleOpenChange = useCallback((open: boolean) => {
     if (open) {
@@ -163,9 +174,31 @@ export default function LinktreeShareButton({
       icon: Upload,
       onClick: handleNativeShare,
       color: "bg-slate-300 text-slate-700",
-      hidden: typeof navigator !== "undefined" && !navigator.share,
+      hidden: !canNativeShare,
     },
   ];
+
+  // Static button for SSR - matches the interactive button styling
+  const shareButton = (
+    <button
+      ref={mounted ? triggerRef : undefined}
+      className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-slate-700 shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:shadow-md sm:right-6 sm:top-6 sm:h-12 sm:w-12"
+      aria-label="Share"
+      onClick={mounted ? undefined : undefined}
+    >
+      <Share className="h-5 w-5 sm:h-6 sm:w-6" />
+    </button>
+  );
+
+  // Render static button during SSR to avoid hydration mismatch with Radix IDs
+  if (!mounted) {
+    return (
+      <>
+        {children}
+        {shareButton}
+      </>
+    );
+  }
 
   return (
     <>

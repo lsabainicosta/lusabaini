@@ -3,12 +3,10 @@
 import { getHomeSectionsContent } from "@/lib/queries";
 import Hero from "@/components/Hero";
 import BrandLogos from "@/components/BrandLogos";
-import Services from "@/components/Services";
 import ClientResults from "@/components/ClientResults";
 
 export default async function Home() {
-  const { clientResults, hero, brandLogos, servicesSection } =
-    await getHomeSectionsContent();
+  const { clientResults, hero, brandLogos } = await getHomeSectionsContent();
 
   return (
     <>
@@ -23,13 +21,6 @@ export default async function Home() {
         storyUserInfo={hero?.storyUserInfo}
       />
       <BrandLogos introText={brandLogos?.introText} logos={brandLogos?.logos} />
-      <Services
-        badgeLabel={servicesSection?.badgeLabel}
-        headlineStart={servicesSection?.headlineStart}
-        headlineEmphasis={servicesSection?.headlineEmphasis}
-        headlineEnd={servicesSection?.headlineEnd}
-        items={servicesSection?.items}
-      />
       <ClientResults results={clientResults} />
     </>
   );

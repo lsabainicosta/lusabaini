@@ -190,7 +190,7 @@ const StoryMockup = ({
       {/* CLIPPED STORY FRAME */}
       <div
         ref={containerRef}
-        className="relative aspect-9/16 rounded-[2.5rem] overflow-hidden border-8 border-white shadow-2xl bg-black cursor-pointer group"
+        className="relative aspect-9/16 rounded-[2.5rem] overflow-hidden border-4 border-white shadow-2xl bg-black cursor-pointer group"
         onClick={handleTap}
       >
         {/* Active video layer */}

@@ -88,9 +88,9 @@ export default function ClientResults({ results }: Props) {
           const ImageContent = (
             <div className="w-full">
               <StaggerItem y={22}>
-                <div className="bg-white/35 border border-black/10 rounded-[2.5rem] p-1 lg:p-2">
+                <div className="rounded-[2.5rem] overflow-hidden border-4 border-white shadow-2xl">
                   <Stagger
-                    className="relative overflow-hidden rounded-[2rem] aspect-square bg-black/5"
+                    className="relative aspect-square bg-black/5"
                     amount={0.6}
                     stagger={0.08}
                     delayChildren={0.04}

@@ -62,20 +62,6 @@ export type BrandLogosSectionContent = {
   logos?: BrandLogoItem[];
 };
 
-export type ServiceItem = {
-  title: string;
-  description?: string;
-  _key?: string;
-};
-
-export type ServicesSectionContent = {
-  badgeLabel?: string;
-  headlineStart?: string;
-  headlineEmphasis?: string;
-  headlineEnd?: string;
-  items?: ServiceItem[];
-};
-
 export type SocialLink = {
   icon: "instagram" | "tiktok" | "youtube" | "x" | "linkedin" | "facebook" | "email";
   href: string;
@@ -127,7 +113,7 @@ const shellQuery = `
       "emailBody": coalesce(emailBody, ""),
       _key
     },
-    "brandColor": coalesce(*[_type == "brandingSection" && _id == "brandingSection"][0].brandColor.hex, "#f9f3eb")
+    "brandColor": coalesce(*[_type == "brandingSection" && _id == "brandingSection"][0].brandColorHex, "#f9f3eb")
   },
   "footer": *[_type == "footerSection" && _id == "footerSection"][0]{
     "brandLabel": coalesce(brandLabel, ""),
@@ -214,7 +200,7 @@ const clientResultsBase = `*[_type == "clientResult"] | order(_updatedAt desc)`;
 const contentQuery = `
 {
   "theme": *[_type == "brandingSection" && _id == "brandingSection"][0]{
-    "brandColor": coalesce(brandColor.hex, "#f9f3eb"),
+    "brandColor": coalesce(brandColorHex, "#f9f3eb"),
   },
   "header": *[_type == "headerSettings" && _id == "headerSettings"][0]{
     "navLinks": navLinks[]{
@@ -266,17 +252,6 @@ const contentQuery = `
       _key
     }
   },
-  "servicesSection": *[_type == "servicesSection" && _id == "servicesSection"][0]{
-    "badgeLabel": coalesce(badgeLabel, "Services"),
-    "headlineStart": coalesce(headlineStart, ""),
-    "headlineEmphasis": coalesce(headlineEmphasis, ""),
-    "headlineEnd": coalesce(headlineEnd, ""),
-    "items": items[]{
-      "title": coalesce(title, ""),
-      "description": coalesce(description, ""),
-      _key
-    }
-  },
   "footer": *[_type == "footerSection" && _id == "footerSection"][0]{
     "brandLabel": coalesce(brandLabel, ""),
     "headlineStart": coalesce(headlineStart, ""),
@@ -298,7 +273,6 @@ export async function getHomepageContent(): Promise<{
   header?: HeaderSettings;
   hero?: HeroSectionContent;
   brandLogos?: BrandLogosSectionContent;
-  servicesSection?: ServicesSectionContent;
   footer?: FooterSettings;
   clientResults?: ClientResult[];
 }> {
@@ -359,17 +333,6 @@ const homeSectionsQuery = `
       _key
     }
   },
-  "servicesSection": *[_type == "servicesSection" && _id == "servicesSection"][0]{
-    "badgeLabel": coalesce(badgeLabel, "Services"),
-    "headlineStart": coalesce(headlineStart, ""),
-    "headlineEmphasis": coalesce(headlineEmphasis, ""),
-    "headlineEnd": coalesce(headlineEnd, ""),
-    "items": items[]{
-      "title": coalesce(title, ""),
-      "description": coalesce(description, ""),
-      _key
-    }
-  },
   "clientResults": ${clientResultsBase}[0...3]${clientResultFields}
 }
 `;
@@ -377,7 +340,6 @@ const homeSectionsQuery = `
 export async function getHomeSectionsContent(): Promise<{
   hero?: HeroSectionContent;
   brandLogos?: BrandLogosSectionContent;
-  servicesSection?: ServicesSectionContent;
   clientResults?: ClientResult[];
 }> {
   return cachedSanityFetch(homeSectionsQuery, {
@@ -388,7 +350,7 @@ export async function getHomeSectionsContent(): Promise<{
 
 const themeQuery = `
 *[_type == "brandingSection" && _id == "brandingSection"][0]{
-  "brandColor": coalesce(brandColor.hex, "#ff7edb"),
+  "brandColor": coalesce(brandColorHex, "#f9f3eb"),
 }
 `;
 

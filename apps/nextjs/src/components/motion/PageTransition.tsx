@@ -16,12 +16,20 @@ type Props = {
   className?: string;
 };
 
+// Module-level flag that persists across route changes.
+// Prevents the enter animation from running on initial page load/refresh
+// (which causes a hydration shift), but still allows it on client-side navigation.
+let hasInitialRenderCompleted = false;
+
 export default function PageTransition({ children, className }: Props) {
   const pathname = usePathname();
   const { isExiting, exitFromPathname, exitDurationMs } =
     useTransitionNavigation();
   const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
   const [hasMounted, setHasMounted] = React.useState(false);
+
+  // Capture whether this is the initial render before the effect runs
+  const isInitialRender = !hasInitialRenderCompleted;
 
   React.useEffect(() => {
     const mq = window.matchMedia?.("(prefers-reduced-motion: reduce)");
@@ -36,6 +44,7 @@ export default function PageTransition({ children, className }: Props) {
 
   React.useEffect(() => {
     setHasMounted(true);
+    hasInitialRenderCompleted = true;
   }, []);
 
   if (prefersReducedMotion) {
@@ -48,7 +57,9 @@ export default function PageTransition({ children, className }: Props) {
     <motion.div
       key={pathname}
       className={className}
-      initial={{ opacity: 0, y: FADE_IN_Y }}
+      // Skip enter animation on initial page load to prevent hydration shift.
+      // `initial={false}` tells Framer Motion to start at the `animate` state.
+      initial={isInitialRender ? false : { opacity: 0, y: FADE_IN_Y }}
       animate={
         isExitingThisPage
           ? {

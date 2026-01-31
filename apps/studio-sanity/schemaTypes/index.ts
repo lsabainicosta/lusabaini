@@ -5,7 +5,6 @@ import {footerSection} from './footerSection'
 import {clientResult} from './clientResult'
 import {heroSection} from './heroSection'
 import {brandLogosSection} from './brandLogosSection'
-import {servicesSection} from './servicesSection'
 import {aboutPage} from './aboutPage'
 import {aboutHeroSection} from './aboutHeroSection'
 import {aboutStorySection} from './aboutStorySection'
@@ -27,7 +26,6 @@ export const schemaTypes = [
   clientResult,
   heroSection,
   brandLogosSection,
-  servicesSection,
   aboutPage,
   aboutHeroSection,
   aboutStorySection,
