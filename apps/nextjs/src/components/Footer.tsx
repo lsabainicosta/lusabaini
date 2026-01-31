@@ -1,10 +1,11 @@
 "use client";
 
-import type { CtaLink, FooterLink, NavLink, SocialLink } from "@/lib/queries";
+import type { FooterLink, NavLink, SocialLink } from "@/lib/queries";
 import TransitionLink from "@/components/motion/TransitionLink";
 import { Button } from "@/components/ui/button";
 import { SocialIcon } from "@/components/SocialLinks";
 import { buildMailtoUrl } from "@/lib/utils";
+import { useContactModal } from "@/components/contact";
 
 type Props = {
   brandLabel?: string;
@@ -15,7 +16,7 @@ type Props = {
   socials?: SocialLink[];
   navigationLinks?: NavLink[];
   legalLinks?: FooterLink[];
-  cta?: CtaLink;
+  cta?: { label?: string };
 };
 
 const defaultNavLinks: NavLink[] = [
@@ -85,6 +86,7 @@ export default function Footer({
   cta,
 }: Props) {
   const currentYear = new Date().getFullYear();
+  const { openModal } = useContactModal();
   const socialData = (socials ?? [])
     .filter((s) => (s?.href ?? "").trim() && (s.href ?? "").trim() !== "#")
     .slice(0, 3);
@@ -130,8 +132,7 @@ export default function Footer({
     "I create TikTok & Instagram content designed to convert views into booked calls and sales.";
   const formattedTitleEnd = formatHeadlineEnd(titleEnd);
 
-  const ctaHref = cta?.href?.trim() || "/book-a-call";
-  const ctaLabel = cta?.label?.trim() || "Book a call";
+  const ctaLabel = cta?.label?.trim() || "Get in touch";
 
   return (
     <footer className="w-full mt-24">
@@ -161,11 +162,8 @@ export default function Footer({
 
             {/* Actions */}
             <div className="flex flex-col gap-8 lg:items-end">
-              <Button
-                asChild
-                className="rounded-full bg-black text-white px-7 py-3 h-auto text-base font-medium hover:bg-black/90 transition-all border-none w-fit"
-              >
-                <FooterNavLink href={ctaHref}>{ctaLabel}</FooterNavLink>
+              <Button type="button" onClick={openModal}>
+                {ctaLabel}
               </Button>
 
               <nav className="flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium tracking-tight text-black/70">

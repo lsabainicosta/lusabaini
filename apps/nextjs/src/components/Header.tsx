@@ -7,12 +7,13 @@ import { Button } from "@/components/ui/button";
 import Logo from "@/components/Logo";
 import TransitionLink from "@/components/motion/TransitionLink";
 import { EASE_OUT } from "@/components/motion/fade";
+import { useContactModal } from "@/components/contact";
 
 type NavLink = { href: string; label: string };
 
 type Props = {
   navLinks?: NavLink[];
-  cta?: { href?: string; label?: string };
+  cta?: { label?: string };
 };
 
 const defaultNavLinks: NavLink[] = [
@@ -23,11 +24,11 @@ const defaultNavLinks: NavLink[] = [
 
 const Header = ({ navLinks, cta }: Props) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { openModal } = useContactModal();
   const links = (navLinks?.length ? navLinks : defaultNavLinks).filter(
     (l) => l.href && l.label
   );
-  const ctaHref = cta?.href || "/book-a-call";
-  const ctaLabel = cta?.label || "Book a call";
+  const ctaLabel = cta?.label || "Get in touch";
 
   return (
     <motion.header 
@@ -68,10 +69,12 @@ const Header = ({ navLinks, cta }: Props) => {
 
           <div className="flex items-center gap-4">
             <Button
-              asChild
-              className="hidden sm:inline-flex rounded-full bg-black text-white px-6 py-2 h-auto text-sm font-medium hover:bg-black/90 transition-all border-none"
+              type="button"
+              size="sm"
+              onClick={openModal}
+              className="hidden sm:inline-flex"
             >
-              <TransitionLink href={ctaHref}>{ctaLabel}</TransitionLink>
+              {ctaLabel}
             </Button>
 
             {/* Framer-style Menu Icon */}
@@ -118,12 +121,15 @@ const Header = ({ navLinks, cta }: Props) => {
             </TransitionLink>
           ))}
           <Button
-            asChild
-            className="mt-4 w-full rounded-full bg-primary text-primary-foreground py-6 h-auto text-xl font-medium"
+            type="button"
+            size="lg"
+            onClick={() => {
+              setIsMenuOpen(false);
+              openModal();
+            }}
+            className="mt-4 w-full"
           >
-            <TransitionLink href={ctaHref} onClick={() => setIsMenuOpen(false)}>
-              {ctaLabel}
-            </TransitionLink>
+            {ctaLabel}
           </Button>
         </div>
       </div>

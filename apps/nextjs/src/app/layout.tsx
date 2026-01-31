@@ -4,16 +4,20 @@ import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 import "./globals.css";
 import PwaRegister from "@/components/PwaRegister";
 import LenisScroll from "@/components/motion/LenisScroll";
+import { Providers } from "@/components/Providers";
 import { getThemeSettings } from "@/lib/queries";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
+  preload: false, // Not used on initial render, prevents preload warning
 });
 
 const siteDomain = process.env.NEXT_PUBLIC_SITE_DOMAIN;
@@ -81,7 +85,7 @@ export default async function RootLayout({
       >
         <PwaRegister />
         <LenisScroll />
-        {children}
+        <Providers>{children}</Providers>
       </body>
       {gaId ? <GoogleAnalytics gaId={gaId} /> : null}
     </html>

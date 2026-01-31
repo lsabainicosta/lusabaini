@@ -7,13 +7,14 @@ import { motion } from "motion/react";
 import { useRouteTransition } from "@/components/motion/RouteTransitionContext";
 import TransitionLink from "@/components/motion/TransitionLink";
 import { EASE_OUT } from "@/components/motion/fade";
+import { useContactModal } from "@/components/contact";
 
 type Props = {
   headlineStart?: string;
   headlineEmphasis?: string;
   headlineEnd?: string;
   description?: string;
-  primaryCta?: { href?: string; label?: string };
+  primaryCta?: { label?: string };
   secondaryCta?: { href?: string; label?: string };
   carouselVideos?: Array<{ url?: string; title?: string }>;
   storyUserInfo?: {
@@ -87,6 +88,7 @@ const Hero = ({
 }: Props) => {
   const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
   const { disableEnterAnimations } = useRouteTransition();
+  const { openModal } = useContactModal();
   const [disableEnterAnimationsAtMount] = React.useState(
     () => disableEnterAnimations
   );
@@ -127,8 +129,7 @@ const Hero = ({
   const body =
     description ||
     "I help brands grow on social through high-performing short-form video, strategy, and hands-on execution.";
-  const primaryHref = primaryCta?.href || "/book-a-call";
-  const primaryLabel = primaryCta?.label || "Book a call";
+  const primaryLabel = primaryCta?.label || "Get in touch";
   const secondaryHref = secondaryCta?.href || "#work";
   const secondaryLabel = secondaryCta?.label || "View my work";
 
@@ -164,17 +165,10 @@ const Hero = ({
           className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
           variants={itemVariants}
         >
-          <Button
-            asChild
-            className="rounded-full bg-black text-white px-8 py-4 h-auto text-lg font-medium hover:bg-black/90 transition-all border-none"
-          >
-            <TransitionLink href={primaryHref}>{primaryLabel}</TransitionLink>
+          <Button type="button" onClick={openModal}>
+            {primaryLabel}
           </Button>
-          <Button
-            asChild
-            variant="outline"
-            className="rounded-full px-8 py-4 h-auto text-lg font-medium border-black/15 shadow-none hover:bg-black/5"
-          >
+          <Button asChild variant="outline">
             <TransitionLink href={secondaryHref}>
               {secondaryLabel}
             </TransitionLink>

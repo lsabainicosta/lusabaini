@@ -52,19 +52,12 @@ export default async function NotFound() {
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <Button
-                asChild
-                className="rounded-full bg-black text-white px-8 py-4 h-auto text-lg font-medium hover:bg-black/90 transition-all border-none"
-              >
+              <Button asChild>
                 <TransitionLink href={primaryButtonHref}>
                   {primaryButtonLabel}
                 </TransitionLink>
               </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="rounded-full px-8 py-4 h-auto text-lg font-medium border-black/15 shadow-none hover:bg-black/5"
-              >
+              <Button asChild variant="outline">
                 <TransitionLink href={secondaryButtonHref}>
                   {secondaryButtonLabel}
                 </TransitionLink>

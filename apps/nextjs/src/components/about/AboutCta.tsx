@@ -3,17 +3,16 @@
 import * as React from "react";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
-import TransitionLink from "@/components/motion/TransitionLink";
 import { EASE_OUT, FADE_IN_DELAY } from "@/components/motion/fade";
 import { useRouteTransition } from "@/components/motion/RouteTransitionContext";
-import type { CtaLink } from "@/lib/queries";
+import { useContactModal } from "@/components/contact";
 
 type Props = {
   headlineStart?: string;
   headlineEmphasis?: string;
   headlineEnd?: string;
   description?: string;
-  ctaButton?: CtaLink;
+  ctaButton?: { label?: string };
 };
 
 export default function AboutCta({
@@ -24,6 +23,7 @@ export default function AboutCta({
   ctaButton,
 }: Props) {
   const { disableEnterAnimations } = useRouteTransition();
+  const { openModal } = useContactModal();
   const [disableEnterAnimationsAtMount] = React.useState(
     () => disableEnterAnimations
   );
@@ -33,8 +33,7 @@ export default function AboutCta({
   const titleEnd = headlineEnd || "together.";
   const body =
     description || "Ready to transform your social media presence?";
-  const ctaHref = ctaButton?.href || "/book-a-call";
-  const ctaLabel = ctaButton?.label || "Book a call";
+  const ctaLabel = ctaButton?.label || "Get in touch";
 
   return (
     <section className="w-full py-20 md:py-28">
@@ -70,11 +69,8 @@ export default function AboutCta({
               {body}
             </p>
 
-            <Button
-              asChild
-              className="mt-4 rounded-full bg-black text-white px-10 py-5 h-auto text-lg font-medium hover:bg-black/90 transition-all border-none shadow-xl hover:shadow-2xl hover:scale-105"
-            >
-              <TransitionLink href={ctaHref}>{ctaLabel}</TransitionLink>
+            <Button type="button" onClick={openModal} className="mt-4">
+              {ctaLabel}
             </Button>
           </div>
         </motion.div>
