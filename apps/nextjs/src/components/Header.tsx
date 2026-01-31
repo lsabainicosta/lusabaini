@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/Logo";
 import TransitionLink from "@/components/motion/TransitionLink";
+import { EASE_OUT } from "@/components/motion/fade";
 
 type NavLink = { href: string; label: string };
 
@@ -28,7 +30,12 @@ const Header = ({ navLinks, cta }: Props) => {
   const ctaLabel = cta?.label || "Book a call";
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 w-full bg-transparent">
+    <motion.header 
+      className="fixed inset-x-0 top-0 z-50 w-full bg-transparent"
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: EASE_OUT, delay: 0.1 }}
+    >
       {/* Progressive Blur Layer */}
       <div
         className="absolute inset-x-0 top-0 h-24 pointer-events-none -z-10"
@@ -120,7 +127,7 @@ const Header = ({ navLinks, cta }: Props) => {
           </Button>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 };
 

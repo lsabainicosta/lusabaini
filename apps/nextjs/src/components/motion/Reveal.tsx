@@ -3,7 +3,7 @@
 import * as React from "react";
 import { motion } from "motion/react";
 import { useRouteTransition } from "@/components/motion/RouteTransitionContext";
-import { FADE_IN_DELAY, fadeInUpVariants } from "@/components/motion/fade";
+import { EASE_OUT } from "@/components/motion/fade";
 
 type Props = {
   children: React.ReactNode;
@@ -12,6 +12,10 @@ type Props = {
    * Delay in seconds.
    */
   delay?: number;
+  /**
+   * Duration in seconds.
+   */
+  duration?: number;
   /**
    * Distance (px) to start from.
    */
@@ -26,13 +30,35 @@ type Props = {
   amount?: number;
 };
 
+// Smooth fade-in-up variants with subtle blur
+function smoothRevealVariants(y: number, duration: number, delay: number) {
+  return {
+    hidden: { 
+      opacity: 0, 
+      y,
+      filter: "blur(3px)",
+    },
+    show: {
+      opacity: 1,
+      y: 0,
+      filter: "blur(0px)",
+      transition: { 
+        duration, 
+        ease: EASE_OUT, 
+        delay,
+      },
+    },
+  };
+}
+
 export default function Reveal({
   children,
   className,
-  delay = FADE_IN_DELAY,
-  y = 28,
+  delay = 0.05,
+  duration = 0.85,
+  y = 24,
   once = true,
-  amount = 0.7,
+  amount = 0.5,
 }: Props) {
   const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
   const { disableEnterAnimations } = useRouteTransition();
@@ -63,7 +89,7 @@ export default function Reveal({
       initial="hidden"
       whileInView="show"
       viewport={{ once, amount }}
-      variants={fadeInUpVariants({ y, delay })}
+      variants={smoothRevealVariants(y, duration, delay)}
     >
       {children}
     </motion.div>

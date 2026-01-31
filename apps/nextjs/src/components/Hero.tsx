@@ -6,7 +6,7 @@ import StoryMockup from "./StoryMockup";
 import { motion } from "motion/react";
 import { useRouteTransition } from "@/components/motion/RouteTransitionContext";
 import TransitionLink from "@/components/motion/TransitionLink";
-import { FADE_IN_DELAY, fadeInUpVariants } from "@/components/motion/fade";
+import { EASE_OUT } from "@/components/motion/fade";
 
 type Props = {
   headlineStart?: string;
@@ -24,6 +24,55 @@ type Props = {
       alt?: string;
     };
   };
+};
+
+// Smooth stagger container variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+// Individual item variants with smooth fade-in-up
+const itemVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: 24,
+    filter: "blur(4px)",
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.8,
+      ease: EASE_OUT,
+    },
+  },
+};
+
+// Mockup specific variants with slight scale
+const mockupVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: 32,
+    scale: 0.96,
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 1,
+      ease: EASE_OUT,
+      delay: 0.25,
+    },
+  },
 };
 
 const Hero = ({
@@ -88,24 +137,33 @@ const Hero = ({
 
   return (
     <section className="relative w-full max-w-6xl mx-auto px-6 py-4 lg:py-8 flex flex-col lg:flex-row items-center gap-16">
-      {/* Left Content */}
+      {/* Left Content - Staggered fade-in */}
       <motion.div
         className="flex-1 flex flex-col items-start gap-8 z-10"
         initial={shouldDisableMountAnimation ? false : "hidden"}
         animate={shouldDisableMountAnimation ? undefined : "show"}
-        variants={fadeInUpVariants({ y: 28, delay: FADE_IN_DELAY })}
+        variants={containerVariants}
       >
-        <h2 className="text-5xl lg:text-7xl font-medium tracking-[-0.04em] leading-[0.9] text-black">
+        <motion.h2 
+          className="text-5xl lg:text-7xl font-medium tracking-[-0.04em] leading-[0.9] text-black"
+          variants={itemVariants}
+        >
           {titleStart} <br />
           actually <span className="italic font-serif">{titleEmphasis}</span>
           {titleEnd ? ` ${titleEnd}` : ""}
-        </h2>
+        </motion.h2>
 
-        <p className="text-xl text-black/60 max-w-md font-sans leading-relaxed">
+        <motion.p 
+          className="text-xl text-black/60 max-w-md font-sans leading-relaxed"
+          variants={itemVariants}
+        >
           {body}
-        </p>
+        </motion.p>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <motion.div 
+          className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
+          variants={itemVariants}
+        >
           <Button
             asChild
             className="rounded-full bg-black text-white px-8 py-4 h-auto text-lg font-medium hover:bg-black/90 transition-all border-none"
@@ -121,14 +179,15 @@ const Hero = ({
               {secondaryLabel}
             </TransitionLink>
           </Button>
-        </div>
+        </motion.div>
       </motion.div>
 
+      {/* Right Content - Smooth scale + fade */}
       <motion.div
         className="flex-1 relative flex justify-center lg:justify-end"
         initial={shouldDisableMountAnimation ? false : "hidden"}
         animate={shouldDisableMountAnimation ? undefined : "show"}
-        variants={fadeInUpVariants({ y: 28, delay: 0.18 })}
+        variants={mockupVariants}
       >
         {showStoryMockup ? (
           <StoryMockup stories={carouselVideos} userInfo={storyUserInfo} />

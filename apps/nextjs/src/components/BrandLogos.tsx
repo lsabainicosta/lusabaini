@@ -4,6 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useAnimationFrame, useMotionValue } from "motion/react";
+import { EASE_OUT } from "@/components/motion/fade";
 
 type BrandItem = {
   name?: string;
@@ -33,6 +34,24 @@ const defaultBrands: Array<{
   { name: "ther", className: "font-mono italic" },
   { name: "Amsterdam", prefix: "○", className: "font-sans" },
 ];
+
+const fadeInVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: 20,
+    filter: "blur(3px)",
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.85,
+      ease: EASE_OUT,
+      delay: 0.15,
+    },
+  },
+};
 
 const BrandLogos = ({ introText, logos }: Props) => {
   const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
@@ -136,7 +155,13 @@ const BrandLogos = ({ introText, logos }: Props) => {
   }, [brands, hasAnyImages, imageLogos]);
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-6 py-12 overflow-hidden">
+    <motion.div 
+      className="w-full max-w-6xl mx-auto px-6 py-12 overflow-hidden"
+      initial={prefersReducedMotion ? false : "hidden"}
+      whileInView="show"
+      viewport={{ once: true, amount: 0.3 }}
+      variants={fadeInVariants}
+    >
       <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
         <p className="text-sm text-black/40 font-sans max-w-[140px] leading-tight shrink-0">
           {introText || "Brands I have helped grow on social."}
@@ -167,7 +192,7 @@ const BrandLogos = ({ introText, logos }: Props) => {
           </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

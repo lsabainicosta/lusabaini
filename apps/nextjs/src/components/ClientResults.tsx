@@ -1,13 +1,61 @@
+"use client";
+
+import * as React from "react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import type { ClientResult } from "@/lib/queries";
 import { Stagger, StaggerItem } from "@/components/motion/Stagger";
+import { motion } from "motion/react";
+import { EASE_OUT } from "@/components/motion/fade";
 
 type Props = {
   results?: ClientResult[];
 };
 
+// Section-level reveal animation
+const sectionVariants = {
+  hidden: { 
+    opacity: 0,
+  },
+  show: {
+    opacity: 1,
+    transition: {
+      duration: 0.6,
+      ease: EASE_OUT,
+    },
+  },
+};
+
+// Individual result card animation
+const cardVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: 40,
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.9,
+      ease: EASE_OUT,
+    },
+  },
+};
+
 export default function ClientResults({ results }: Props) {
+  const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
+
+  React.useEffect(() => {
+    const mq = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    if (!mq) return;
+
+    const update = () => setPrefersReducedMotion(mq.matches);
+    update();
+
+    mq.addEventListener?.("change", update);
+    return () => mq.removeEventListener?.("change", update);
+  }, []);
+
   const items = (results ?? []).filter(
     (r) =>
       (r.headlineStart && r.headlineEmphasis) ||
@@ -21,7 +69,13 @@ export default function ClientResults({ results }: Props) {
   const displayItems = items.slice(0, 3);
 
   return (
-    <section className="w-full py-24">
+    <motion.section 
+      className="w-full py-24"
+      initial={prefersReducedMotion ? false : "hidden"}
+      whileInView="show"
+      viewport={{ once: true, amount: 0.1 }}
+      variants={sectionVariants}
+    >
       <div className="max-w-6xl mx-auto px-6 flex flex-col gap-20">
         {displayItems.map((result, index) => {
           const isEven = index % 2 === 0;
@@ -33,7 +87,7 @@ export default function ClientResults({ results }: Props) {
                 </Badge>
               </StaggerItem>
 
-              <StaggerItem y={26}>
+              <StaggerItem y={24}>
                 <h2 className="text-5xl lg:text-6xl font-medium tracking-[-0.04em] leading-[0.9] text-black">
                   {result.headlineStart}{" "}
                   <span className="italic font-serif">
@@ -44,7 +98,7 @@ export default function ClientResults({ results }: Props) {
               </StaggerItem>
 
               {result.description ? (
-                <StaggerItem>
+                <StaggerItem y={20}>
                   <p className="text-xl text-black/60 max-w-xl font-sans leading-relaxed">
                     {result.description}
                   </p>
@@ -52,12 +106,12 @@ export default function ClientResults({ results }: Props) {
               ) : null}
 
               {result.stats?.length ? (
-                <StaggerItem>
+                <StaggerItem y={18}>
                   <Stagger
                     className="w-full grid grid-cols-1 sm:grid-cols-2 gap-10 pt-6"
-                    amount={0.6}
-                    stagger={0.07}
-                    delayChildren={0.03}
+                    amount={0.5}
+                    stagger={0.1}
+                    delayChildren={0.05}
                   >
                     {result.stats.slice(0, 4).map((stat) => (
                       <StaggerItem
@@ -87,13 +141,13 @@ export default function ClientResults({ results }: Props) {
 
           const ImageContent = (
             <div className="w-full">
-              <StaggerItem y={22}>
+              <StaggerItem y={24}>
                 <div className="rounded-[2.5rem] overflow-hidden border-4 border-white shadow-2xl">
                   <Stagger
                     className="relative aspect-square bg-black/5"
-                    amount={0.6}
-                    stagger={0.08}
-                    delayChildren={0.04}
+                    amount={0.5}
+                    stagger={0.12}
+                    delayChildren={0.06}
                   >
                     <StaggerItem y={0} className="absolute inset-0">
                       {result.video?.url ? (
@@ -128,7 +182,7 @@ export default function ClientResults({ results }: Props) {
 
                     {(result.imageOverlayText || result.clientName) && (
                       <StaggerItem
-                        y={10}
+                        y={12}
                         className="absolute inset-0 flex items-center justify-center"
                       >
                         <div className="text-white text-4xl lg:text-5xl font-serif tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] max-w-md text-center">
@@ -143,21 +197,28 @@ export default function ClientResults({ results }: Props) {
           );
 
           return (
-            <Stagger
+            <motion.div
               key={result._id}
-              className={`grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-center ${
-                !isEven ? "lg:[&>div:first-child]:order-2 lg:[&>div:last-child]:order-1" : ""
-              }`}
-              amount={0.5}
-              stagger={0.09}
-              delayChildren={0.02}
+              initial={prefersReducedMotion ? false : "hidden"}
+              whileInView="show"
+              viewport={{ once: true, amount: 0.25 }}
+              variants={cardVariants}
             >
-              {TextContent}
-              {ImageContent}
-            </Stagger>
+              <Stagger
+                className={`grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-center ${
+                  !isEven ? "lg:[&>div:first-child]:order-2 lg:[&>div:last-child]:order-1" : ""
+                }`}
+                amount={0.4}
+                stagger={0.12}
+                delayChildren={0.04}
+              >
+                {TextContent}
+                {ImageContent}
+              </Stagger>
+            </motion.div>
           );
         })}
       </div>
-    </section>
+    </motion.section>
   );
 }

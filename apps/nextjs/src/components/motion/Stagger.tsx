@@ -3,7 +3,7 @@
 import * as React from "react";
 import { motion } from "motion/react";
 import { useRouteTransition } from "@/components/motion/RouteTransitionContext";
-import { fadeInUpVariants } from "@/components/motion/fade";
+import { EASE_OUT } from "@/components/motion/fade";
 
 type StaggerProps = {
   children: React.ReactNode;
@@ -19,7 +19,7 @@ export function Stagger({
   className,
   once = true,
   amount = 0.2,
-  stagger = 0.08,
+  stagger = 0.1,
   delayChildren = 0,
 }: StaggerProps) {
   const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
@@ -52,11 +52,14 @@ export function Stagger({
       whileInView="show"
       viewport={{ once, amount }}
       variants={{
-        hidden: {},
+        hidden: { opacity: 0 },
         show: {
+          opacity: 1,
           transition: {
             staggerChildren: stagger,
             delayChildren,
+            duration: 0.4,
+            ease: EASE_OUT,
           },
         },
       }}
@@ -70,11 +73,40 @@ type StaggerItemProps = {
   children: React.ReactNode;
   className?: string;
   y?: number;
+  duration?: number;
 };
 
-export function StaggerItem({ children, className, y = 18 }: StaggerItemProps) {
+// Smooth fade-in-up variants for stagger items
+function smoothFadeInUpVariants(y: number, duration: number) {
+  return {
+    hidden: { 
+      opacity: 0, 
+      y,
+      filter: "blur(2px)",
+    },
+    show: {
+      opacity: 1,
+      y: 0,
+      filter: "blur(0px)",
+      transition: { 
+        duration, 
+        ease: EASE_OUT,
+      },
+    },
+  };
+}
+
+export function StaggerItem({ 
+  children, 
+  className, 
+  y = 20,
+  duration = 0.75,
+}: StaggerItemProps) {
   return (
-    <motion.div className={className} variants={fadeInUpVariants({ y })}>
+    <motion.div 
+      className={className} 
+      variants={smoothFadeInUpVariants(y, duration)}
+    >
       {children}
     </motion.div>
   );
