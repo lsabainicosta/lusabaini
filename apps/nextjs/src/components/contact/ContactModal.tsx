@@ -94,7 +94,8 @@ export function ContactModal() {
             Let&apos;s work together
           </DialogTitle>
           <DialogDescription className="text-black/60">
-            Fill out the form below and I&apos;ll get back to you as soon as possible.
+            Fill out the form below and I&apos;ll get back to you as soon as
+            possible.
           </DialogDescription>
         </DialogHeader>
 
