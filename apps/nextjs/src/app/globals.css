@@ -6,6 +6,8 @@
 html,
 body {
   min-height: 100%;
+  min-height: 100svh;
+  min-height: -webkit-fill-available;
   overflow-x: hidden;
 }
 

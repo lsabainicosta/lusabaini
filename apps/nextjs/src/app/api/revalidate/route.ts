@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
     "client-results",
     "about-page",
     "my-work-page",
+    "linktree-page"
   ];
 
   tagsToRevalidate.forEach((tag) => {

@@ -1,0 +1,48 @@
+/* iOS Safari viewport height and overlap fix for linktree pages */
+
+.linktree-container {
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  
+  /* Gradient background - avoid background-attachment: fixed as it can be buggy on mobile */
+  background: linear-gradient(
+    180deg,
+    var(--linktree-brand) 0%,
+    color-mix(in srgb, var(--linktree-brand) 40%, #ffffff) 50%,
+    var(--linktree-bottom) 100%
+  );
+  
+  /* Use the bottom color as the base color for this container */
+  background-color: var(--linktree-bottom);
+}
+
+.linktree-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1; /* Push footer to bottom */
+  
+  width: 100%;
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+  
+  box-sizing: border-box;
+  
+  /* Standard padding, will scroll naturally with address bar */
+  padding: 5rem 1.5rem 3rem;
+  padding-top: calc(5rem + env(safe-area-inset-top, 0));
+  padding-bottom: calc(3rem + env(safe-area-inset-bottom, 0));
+}
+
+@media (min-width: 640px) {
+  .linktree-content {
+    padding: 7rem 1.5rem 4rem;
+    padding-top: calc(7rem + env(safe-area-inset-top, 0));
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0));
+  }
+}

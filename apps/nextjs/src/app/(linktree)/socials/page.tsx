@@ -35,9 +35,14 @@ export default async function SocialsPage() {
 
       {/* Subtle branding */}
       {process.env.NEXT_PUBLIC_SITE_DOMAIN && (
-        <p className="mt-auto pt-16 text-xs text-slate-500/60">
+        <a 
+          href={`https://${process.env.NEXT_PUBLIC_SITE_DOMAIN}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-auto pt-16 text-xs text-slate-500/60 transition-opacity hover:opacity-100"
+        >
           {process.env.NEXT_PUBLIC_SITE_DOMAIN}
-        </p>
+        </a>
       )}
     </>
   );
