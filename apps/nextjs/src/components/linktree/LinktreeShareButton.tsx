@@ -41,14 +41,12 @@ type LinktreeShareButtonProps = {
     url?: string;
     alt?: string;
   };
-  children: React.ReactNode;
 };
 
 export default function LinktreeShareButton({
   name,
   username,
   profileImage,
-  children,
 }: LinktreeShareButtonProps) {
   const [copied, setCopied] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -178,46 +176,27 @@ export default function LinktreeShareButton({
     },
   ];
 
-  // Static button for SSR - matches the interactive button styling
-  const shareButton = (
-    <button
-      ref={mounted ? triggerRef : undefined}
-      className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-slate-700 shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:shadow-md sm:right-6 sm:top-6 sm:h-12 sm:w-12"
-      aria-label="Share"
-      onClick={mounted ? undefined : undefined}
-    >
-      <Share className="h-5 w-5 sm:h-6 sm:w-6" />
-    </button>
-  );
+  const buttonClasses =
+    "absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-slate-700 shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:shadow-md sm:right-6 sm:top-6 sm:h-12 sm:w-12";
 
   // Render static button during SSR to avoid hydration mismatch with Radix IDs
   if (!mounted) {
     return (
-      <>
-        {children}
-        {shareButton}
-      </>
+      <button className={buttonClasses} aria-label="Share">
+        <Share className="h-5 w-5 sm:h-6 sm:w-6" />
+      </button>
     );
   }
 
   return (
-    <>
-      {/* Page content - rendered outside Drawer to avoid aria-hidden issues */}
-      {children}
+    <Drawer open={isOpen} onOpenChange={handleOpenChange}>
+      <DrawerTrigger asChild>
+        <button ref={triggerRef} className={buttonClasses} aria-label="Share">
+          <Share className="h-5 w-5 sm:h-6 sm:w-6" />
+        </button>
+      </DrawerTrigger>
 
-      <Drawer open={isOpen} onOpenChange={handleOpenChange}>
-        {/* Trigger button - positioned by parent */}
-        <DrawerTrigger asChild>
-          <button
-            ref={triggerRef}
-            className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-slate-700 shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:shadow-md sm:right-6 sm:top-6 sm:h-12 sm:w-12"
-            aria-label="Share"
-          >
-            <Share className="h-5 w-5 sm:h-6 sm:w-6" />
-          </button>
-        </DrawerTrigger>
-
-        <DrawerContent className="mx-auto max-w-lg rounded-t-3xl">
+      <DrawerContent className="mx-auto max-w-lg rounded-t-3xl">
         <DrawerHeader className="pb-2">
           <DrawerTitle className="text-center text-lg">Share</DrawerTitle>
           <DrawerDescription className="sr-only">
@@ -275,6 +254,5 @@ export default function LinktreeShareButton({
         </div>
       </DrawerContent>
     </Drawer>
-    </>
   );
 }

@@ -26,7 +26,7 @@ export default function LinktreeAvatar({ image, name }: LinktreeAvatarProps) {
       className="relative"
     >
       <div
-        className="relative h-24 w-24 overflow-hidden rounded-full ring-1 shadow-lg sm:h-28 sm:w-28"
+        className="relative h-24 w-24 overflow-hidden ring-1 rounded-full shadow-lg sm:h-28 sm:w-28"
         style={{
           boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
         }}
@@ -41,8 +41,6 @@ export default function LinktreeAvatar({ image, name }: LinktreeAvatarProps) {
           className="object-cover"
         />
       </div>
-      {/* Decorative ring using brand color */}
-      <div className="absolute inset-0 rounded-full ring-1 ring-offset-2 ring-offset-transparent" />
     </motion.div>
   );
 }
