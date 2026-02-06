@@ -6,6 +6,149 @@ type Props = {
   page: LegalPageContent;
 };
 
+function normalizeMarkdownContent(raw?: unknown) {
+  if (!raw) return "";
+
+  let normalized: string;
+  if (typeof raw === "string") {
+    normalized = raw;
+  } else if (typeof raw === "object" && raw !== null) {
+    const candidate =
+      "markdown" in raw && typeof raw.markdown === "string"
+        ? raw.markdown
+        : "content" in raw && typeof raw.content === "string"
+          ? raw.content
+          : "value" in raw && typeof raw.value === "string"
+            ? raw.value
+            : "";
+    normalized = candidate;
+  } else {
+    normalized = String(raw);
+  }
+
+  const trimmed = normalized.trim();
+
+  // Handle cases where markdown was stored/returned as a JSON-stringified string.
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    trimmed.startsWith("{") ||
+    trimmed.startsWith("[")
+  ) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (typeof parsed === "string") {
+        normalized = parsed;
+      }
+    } catch {
+      // Keep original string when it's not valid JSON.
+    }
+  }
+
+  // Convert escaped newlines/tabs into actual whitespace so markdown can parse.
+  if (!normalized.includes("\n") && /\\[nrt]/.test(normalized)) {
+    normalized = normalized
+      .replace(/\\r\\n/g, "\n")
+      .replace(/\\n/g, "\n")
+      .replace(/\\r/g, "\n")
+      .replace(/\\t/g, "\t");
+  }
+
+  return normalized;
+}
+
+function hasMarkdownSyntax(value: string) {
+  return /(^|\n)\s{0,3}(#{1,6}\s|[-*+]\s|\d+\.\s|>\s|```|\[[^\]]+\]\([^)]+\))/.test(
+    value
+  );
+}
+
+function isLikelySectionHeading(line: string) {
+  const compact = line.trim();
+  if (!compact) return false;
+  if (compact.length > 58) return false;
+  if (/[.!?:]$/.test(compact)) return false;
+
+  return /^(cookies?|cookie|privacy|analytics|information|managing|changes|contact|retention|rights|lawful basis|legal basis)/i.test(
+    compact
+  );
+}
+
+function isLikelyListIntro(line: string) {
+  return /(including|includes|may collect|such as|for example)\s*:?\s*$/i.test(
+    line.trim()
+  );
+}
+
+function isLikelyListItem(line: string) {
+  const compact = line.trim();
+  if (!compact) return false;
+  if (compact.length > 50) return false;
+  if (/[.!?]$/.test(compact)) return false;
+  return true;
+}
+
+function coercePlainLegalTextToMarkdown(value: string) {
+  if (hasMarkdownSyntax(value)) return value;
+
+  const lines = value
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length < 6) return value;
+
+  const out: string[] = [];
+  let paragraph: string[] = [];
+  let listMode = false;
+  let previousWasListIntro = false;
+
+  const flushParagraph = () => {
+    if (paragraph.length === 0) return;
+    out.push(paragraph.join(" "));
+    out.push("");
+    paragraph = [];
+  };
+
+  for (const line of lines) {
+    if (isLikelySectionHeading(line)) {
+      flushParagraph();
+      listMode = false;
+      previousWasListIntro = false;
+      out.push(`## ${line}`);
+      out.push("");
+      continue;
+    }
+
+    if (
+      (previousWasListIntro && isLikelyListItem(line)) ||
+      (listMode && isLikelyListItem(line))
+    ) {
+      flushParagraph();
+      out.push(`- ${line}`);
+      listMode = true;
+      previousWasListIntro = false;
+      continue;
+    }
+
+    if (listMode) {
+      out.push("");
+      listMode = false;
+    }
+
+    paragraph.push(line);
+    previousWasListIntro = isLikelyListIntro(line);
+
+    if (/[.!?:]$/.test(line)) {
+      flushParagraph();
+    }
+  }
+
+  if (listMode) out.push("");
+  flushParagraph();
+
+  return out.join("\n").trim();
+}
+
 function formatLastUpdated(raw?: string) {
   if (!raw?.trim()) return "";
   const parsed = new Date(raw);
@@ -19,7 +162,10 @@ function formatLastUpdated(raw?: string) {
 
 export default function LegalPageView({ page }: Props) {
   const lastUpdated = formatLastUpdated(page.lastUpdated);
-  const contentHtml = marked.parse(page.content ?? "", {
+  const normalizedContent = normalizeMarkdownContent(page.content);
+  const parsedContent = coercePlainLegalTextToMarkdown(normalizedContent);
+
+  const contentHtml = marked.parse(parsedContent, {
     gfm: true,
     breaks: true,
   }) as string;
@@ -61,6 +207,7 @@ export default function LegalPageView({ page }: Props) {
               <div className="relative overflow-hidden">
                 <div
                   className="text-base sm:text-lg text-black/70 font-sans leading-relaxed
+                    [&_h1]:text-3xl [&_h1]:sm:text-4xl [&_h1]:font-medium [&_h1]:tracking-[-0.03em] [&_h1]:text-black [&_h1]:mt-8 [&_h1]:mb-4
                     [&_h2]:text-2xl [&_h2]:sm:text-3xl [&_h2]:font-medium [&_h2]:tracking-[-0.03em] [&_h2]:text-black [&_h2]:mt-8 [&_h2]:mb-3
                     [&_h3]:text-xl [&_h3]:sm:text-2xl [&_h3]:font-medium [&_h3]:tracking-[-0.03em] [&_h3]:text-black [&_h3]:mt-7 [&_h3]:mb-3
                     [&_p]:mb-4

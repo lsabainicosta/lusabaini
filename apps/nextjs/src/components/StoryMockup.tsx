@@ -67,6 +67,7 @@ const StoryMockup = ({
   const slotReadyRef = useRef<[boolean, boolean]>([false, false]);
   const preloaderVideosRef = useRef<HTMLVideoElement[]>([]);
   const progressRafRef = useRef<number | null>(null);
+  const transitionTokenRef = useRef(0);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const tapStartRef = useRef<{
@@ -106,10 +107,11 @@ const StoryMockup = ({
   }, []);
 
   const maybeStartPendingFor = useCallback(
-    (slot: 0 | 1, index: number) => {
+    (slot: 0 | 1, index: number, token: number) => {
       if (!isInView || !isPageVisible) return;
       if (pendingVisible) return;
       if (slotIndices[slot] !== index) return;
+      if (transitionTokenRef.current !== token) return;
 
       const pendingVideo = getVideoRef(slot).current;
       if (!pendingVideo) return;
@@ -127,13 +129,17 @@ const StoryMockup = ({
 
       const startedAt = performance.now();
       const revealWhenMoving = () => {
+        if (transitionTokenRef.current !== token) return;
         if (pendingVisible) return;
         if (pendingVideo.currentTime > 0.01) {
           setPendingVisible(true);
           return;
         }
-        if (performance.now() - startedAt > 500) {
-          setPendingVisible(true);
+        if (performance.now() - startedAt > 1200) {
+          // Abort stale/blocked transitions instead of revealing a blank layer.
+          setTargetSlot(null);
+          setTargetIndex(null);
+          setPendingVisible(false);
           return;
         }
         window.requestAnimationFrame(revealWhenMoving);
@@ -150,11 +156,13 @@ const StoryMockup = ({
       if (nextIndex === activeIndex) return;
 
       const nextSlot = (1 - activeSlot) as 0 | 1;
+      const token = transitionTokenRef.current + 1;
+      transitionTokenRef.current = token;
       setTargetIndex(nextIndex);
       setTargetSlot(nextSlot);
       setPendingVisible(false);
       setSlotIndex(nextSlot, nextIndex);
-      maybeStartPendingFor(nextSlot, nextIndex);
+      maybeStartPendingFor(nextSlot, nextIndex, token);
     },
     [
       count,
@@ -168,7 +176,7 @@ const StoryMockup = ({
 
   const maybeStartPending = useCallback(() => {
     if (targetSlot === null || targetIndex === null) return;
-    maybeStartPendingFor(targetSlot, targetIndex);
+    maybeStartPendingFor(targetSlot, targetIndex, transitionTokenRef.current);
   }, [targetSlot, targetIndex, maybeStartPendingFor]);
 
   useEffect(() => {
@@ -192,6 +200,7 @@ const StoryMockup = ({
 
       setActiveSlot(newSlot);
       setActiveIndex(newIndex);
+      transitionTokenRef.current += 1;
       setTargetSlot(null);
       setTargetIndex(null);
       setPendingVisible(false);
