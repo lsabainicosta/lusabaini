@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 import "./globals.css";
 import PwaRegister from "@/components/PwaRegister";
 import LenisScroll from "@/components/motion/LenisScroll";
 import { Providers } from "@/components/Providers";
 import { getThemeSettings } from "@/lib/queries";
+import ConsentManagedAnalytics from "@/components/ConsentManagedAnalytics";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -67,9 +67,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const gaId = process.env.NEXT_PUBLIC_GA_ID;
-  const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
-
   const theme = await getThemeSettings();
   const brandColor = theme?.brandColor || "#f9f3eb";
   const brandLight = shiftHexColor(brandColor, 28);
@@ -86,15 +83,14 @@ export default async function RootLayout({
         ["--brand-soft" as string]: brandSoft,
       }}
     >
-      {gtmId ? <GoogleTagManager gtmId={gtmId} /> : null}
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <PwaRegister />
         <LenisScroll />
         <Providers>{children}</Providers>
+        <ConsentManagedAnalytics />
       </body>
-      {gaId ? <GoogleAnalytics gaId={gaId} /> : null}
     </html>
   );
 }

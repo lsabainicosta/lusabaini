@@ -2,6 +2,7 @@ import PageTransition from "@/components/motion/PageTransition";
 import TransitionShell from "@/components/motion/TransitionShell";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import CookieBanner from "@/components/CookieBanner";
 import { getShellContent } from "@/lib/queries";
 import { TransitionProvider } from "@/components/motion/TransitionContext";
 
@@ -15,6 +16,10 @@ export default async function MainLayout({
   const mainNavigation = siteSettings?.mainNavigation;
   const ctaButton = siteSettings?.ctaButton;
   const socials = siteSettings?.socials;
+  const legalLinks = footer?.legalLinks ?? [];
+  const cookiePolicyHref =
+    legalLinks.find((link) => /cookie/i.test(link.label) || /cookie/i.test(link.href))
+      ?.href ?? "/legal/cookie-policy";
 
   return (
     <TransitionProvider exitDurationMs={420}>
@@ -37,6 +42,7 @@ export default async function MainLayout({
           </main>
         </TransitionShell>
       </PageTransition>
+      <CookieBanner policyHref={cookiePolicyHref} />
     </TransitionProvider>
   );
 }
