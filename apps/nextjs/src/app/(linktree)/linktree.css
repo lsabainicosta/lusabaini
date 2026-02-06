@@ -2,25 +2,39 @@
 
 .linktree-container {
   position: relative;
+  isolation: isolate;
   width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
   
-  /* Gradient background - avoid background-attachment: fixed as it can be buggy on mobile */
-  background: linear-gradient(
-    180deg,
-    var(--linktree-brand) 0%,
-    color-mix(in srgb, var(--linktree-brand) 40%, #ffffff) 50%,
-    var(--linktree-bottom) 100%
-  );
+  /* Gradient background is also mirrored on html as fallback for iOS chrome areas. */
+  background: var(--linktree-gradient);
   
   /* Use the bottom color as the base color for this container */
   background-color: var(--linktree-bottom);
 }
 
+.linktree-top-safe-fallback {
+  position: fixed;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: max(env(safe-area-inset-top, 0px), 140px);
+  background-image: linear-gradient(
+    180deg,
+    var(--linktree-brand) 0%,
+    var(--linktree-brand) 45%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
 .linktree-content {
   position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
