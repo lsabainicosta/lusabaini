@@ -137,10 +137,10 @@ const Hero = ({
     prefersReducedMotion || disableEnterAnimationsAtMount;
 
   return (
-    <section className="relative w-full max-w-6xl mx-auto px-6 py-4 lg:py-8 flex flex-col lg:flex-row items-center gap-16">
+    <section className="relative w-full max-w-6xl mx-auto px-6 pt-14 pb-4 sm:pt-10 sm:pb-6 lg:py-8 flex flex-col lg:flex-row items-center gap-10 sm:gap-12 lg:gap-16">
       {/* Left Content - Staggered fade-in */}
       <motion.div
-        className="flex-1 flex flex-col items-start gap-8 z-10"
+        className="flex-1 flex flex-col items-start gap-6 sm:gap-8 z-10"
         initial={shouldDisableMountAnimation ? false : "hidden"}
         animate={shouldDisableMountAnimation ? undefined : "show"}
         variants={containerVariants}
@@ -186,7 +186,7 @@ const Hero = ({
         {showStoryMockup ? (
           <StoryMockup stories={carouselVideos} userInfo={storyUserInfo} />
         ) : (
-          <div className="relative w-[350px]">
+          <div className="relative w-[320px] sm:w-[350px]">
             <div className="relative aspect-9/16 rounded-[2.5rem] overflow-hidden border-4 border-white shadow-2xl bg-black/5" />
           </div>
         )}

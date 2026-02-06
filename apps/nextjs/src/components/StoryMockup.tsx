@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { Heart } from "lucide-react";
 import Image from "next/image";
 import { motion, useMotionValue, useTransform } from "motion/react";
@@ -27,58 +27,201 @@ const defaultStories: Story[] = [
   { src: "/videos/vid3.mp4", type: "video" },
 ];
 
-const StoryMockup = ({ 
+const TRANSITION_MS = 180;
+const PRELOAD_AHEAD_SEC = 0.25;
+const TAP_MAX_MOVE_PX = 14;
+const TAP_MAX_DURATION_MS = 350;
+const PREV_ZONE_RATIO = 0.35;
+const NEXT_ZONE_RATIO = 0.65;
+
+const StoryMockup = ({
   stories,
-  userInfo 
-}: { 
+  userInfo,
+}: {
   stories?: StoryInput[];
   userInfo?: StoryUserInfo;
 }) => {
   const storyItems: Story[] = useMemo(() => {
     const fromSanity =
-      stories?.map((s) => ({ src: s.url || "", type: "video" as const })) ?? [];
+      stories?.map((s) => ({ src: s.url || "", type: "video" as const })) ??
+      [];
     const valid = fromSanity.filter((s) => Boolean(s.src));
     return valid.length ? valid : defaultStories;
   }, [stories]);
 
-  // We keep the "active" story visible until the next story has loaded its first frame,
-  // then crossfade. This avoids the 1-frame black flash that can happen on src swaps.
-  const [activeIndex, setActiveIndex] = useState(0);
-  // UI state (progress bars) should only advance once the new video is truly ready/visible.
-  const [committedIndex, setCommittedIndex] = useState(0);
-  const [pendingIndex, setPendingIndex] = useState<number | null>(null);
-  const [pendingReady, setPendingReady] = useState(false);
-  const [isPromoting, setIsPromoting] = useState(false);
-
-  const activeVideoRef = useRef<HTMLVideoElement | null>(null);
-  const pendingVideoRef = useRef<HTMLVideoElement | null>(null);
   const count = storyItems.length || 1;
-  const safeActiveIndex = activeIndex % count;
+  const initialSecondIndex = count > 1 ? 1 : 0;
 
-  // Use motion values for ultra-smooth updates outside of React's render cycle
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeSlot, setActiveSlot] = useState<0 | 1>(0);
+  const [slotIndices, setSlotIndices] = useState<[number, number]>([
+    0,
+    initialSecondIndex,
+  ]);
+  const [targetIndex, setTargetIndex] = useState<number | null>(null);
+  const [targetSlot, setTargetSlot] = useState<0 | 1 | null>(null);
+  const [pendingVisible, setPendingVisible] = useState(false);
+
+  const videoRefA = useRef<HTMLVideoElement | null>(null);
+  const videoRefB = useRef<HTMLVideoElement | null>(null);
+  const slotReadyRef = useRef<[boolean, boolean]>([false, false]);
+  const preloaderVideosRef = useRef<HTMLVideoElement[]>([]);
+  const progressRafRef = useRef<number | null>(null);
+
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const tapStartRef = useRef<{
+    x: number;
+    y: number;
+    t: number;
+    pointerId: number;
+  } | null>(null);
+
+  const [isInView, setIsInView] = useState(true);
+  const [isPageVisible, setIsPageVisible] = useState(true);
+
   const activeProgress = useMotionValue(0);
   const progressWidth = useTransform(activeProgress, (v) => `${v}%`);
 
-  const requestTransition = (nextIndex: number) => {
+  const getVideoRef = useCallback(
+    (slot: 0 | 1) => (slot === 0 ? videoRefA : videoRefB),
+    []
+  );
+
+  const setSlotIndex = useCallback((slot: 0 | 1, index: number) => {
+    setSlotIndices((prev) => {
+      if (prev[slot] === index) return prev;
+      const next: [number, number] = [prev[0], prev[1]];
+      next[slot] = index;
+      slotReadyRef.current[slot] = false;
+      return next;
+    });
+  }, []);
+
+  const getVideoProgress = useCallback((video: HTMLVideoElement | null) => {
+    if (!video) return 0;
+    if (!Number.isFinite(video.duration) || video.duration <= 0) return 0;
+    const value = (video.currentTime / video.duration) * 100;
+    if (!Number.isFinite(value)) return 0;
+    return Math.max(0, Math.min(100, value));
+  }, []);
+
+  const maybeStartPendingFor = useCallback(
+    (slot: 0 | 1, index: number) => {
+      if (!isInView || !isPageVisible) return;
+      if (pendingVisible) return;
+      if (slotIndices[slot] !== index) return;
+
+      const pendingVideo = getVideoRef(slot).current;
+      if (!pendingVideo) return;
+
+      const isReady = pendingVideo.readyState >= 2 || slotReadyRef.current[slot];
+      if (!isReady) return;
+
+      pendingVideo.play().catch((err) => {
+        if (err?.name === "AbortError") return;
+        if (err?.name === "NotAllowedError") return;
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("Pending video play failed:", err);
+        }
+      });
+
+      const startedAt = performance.now();
+      const revealWhenMoving = () => {
+        if (pendingVisible) return;
+        if (pendingVideo.currentTime > 0.01) {
+          setPendingVisible(true);
+          return;
+        }
+        if (performance.now() - startedAt > 500) {
+          setPendingVisible(true);
+          return;
+        }
+        window.requestAnimationFrame(revealWhenMoving);
+      };
+      window.requestAnimationFrame(revealWhenMoving);
+    },
+    [isInView, isPageVisible, pendingVisible, slotIndices, getVideoRef]
+  );
+
+  const requestTransition = useCallback(
+    (nextIndex: number) => {
+      if (count <= 1) return;
+      if (targetIndex !== null) return;
+      if (nextIndex === activeIndex) return;
+
+      const nextSlot = (1 - activeSlot) as 0 | 1;
+      setTargetIndex(nextIndex);
+      setTargetSlot(nextSlot);
+      setPendingVisible(false);
+      setSlotIndex(nextSlot, nextIndex);
+      maybeStartPendingFor(nextSlot, nextIndex);
+    },
+    [
+      count,
+      targetIndex,
+      activeIndex,
+      activeSlot,
+      setSlotIndex,
+      maybeStartPendingFor,
+    ]
+  );
+
+  const maybeStartPending = useCallback(() => {
+    if (targetSlot === null || targetIndex === null) return;
+    maybeStartPendingFor(targetSlot, targetIndex);
+  }, [targetSlot, targetIndex, maybeStartPendingFor]);
+
+  useEffect(() => {
+    if (!pendingVisible || targetSlot === null || targetIndex === null) return;
+
+    const oldSlot = activeSlot;
+    const newSlot = targetSlot;
+    const newIndex = targetIndex;
+
+    const timer = window.setTimeout(() => {
+      const oldVideo = getVideoRef(oldSlot).current;
+      const newVideo = getVideoRef(newSlot).current;
+
+      if (progressRafRef.current !== null) {
+        window.cancelAnimationFrame(progressRafRef.current);
+        progressRafRef.current = null;
+      }
+      oldVideo?.pause();
+
+      const nextProgress = getVideoProgress(newVideo);
+
+      setActiveSlot(newSlot);
+      setActiveIndex(newIndex);
+      setTargetSlot(null);
+      setTargetIndex(null);
+      setPendingVisible(false);
+      activeProgress.set(nextProgress);
+
+      newVideo?.play().catch(() => {});
+    }, TRANSITION_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    pendingVisible,
+    targetSlot,
+    targetIndex,
+    activeSlot,
+    getVideoRef,
+    getVideoProgress,
+    activeProgress,
+  ]);
+
+  useEffect(() => {
     if (count <= 1) return;
-    // Avoid stacking transitions if the user taps quickly.
-    if (pendingIndex !== null) return;
-    if (isPromoting) return;
-    if (nextIndex === safeActiveIndex) return;
-    setPendingReady(false);
-    setPendingIndex(nextIndex);
-    // Update UI immediately on interaction: jump progress bar to the target segment and start from 0.
-    setCommittedIndex(nextIndex);
-    activeProgress.set(0);
-  };
+    const nextIndex = (activeIndex + 1) % count;
+    const inactiveSlot = (1 - activeSlot) as 0 | 1;
+    setSlotIndex(inactiveSlot, nextIndex);
 
-  const handleNext = () => requestTransition((safeActiveIndex + 1) % count);
-  const handlePrev = () =>
-    requestTransition((safeActiveIndex - 1 + count) % count);
-
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [isInView, setIsInView] = useState(true);
-  const [isPageVisible, setIsPageVisible] = useState(true);
+    const preloadVideo = getVideoRef(inactiveSlot).current;
+    if (preloadVideo) {
+      preloadVideo.load();
+    }
+  }, [count, activeIndex, activeSlot, setSlotIndex, getVideoRef]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -90,7 +233,12 @@ const StoryMockup = ({
         if (!entry) return;
         setIsInView(entry.isIntersecting);
       },
-      { threshold: 0.6 }
+      {
+        // Keep story active when it's near the viewport to avoid iOS black-frame
+        // decoder behavior during slight scroll.
+        threshold: 0,
+        rootMargin: "220px 0px 220px 0px",
+      }
     );
 
     io.observe(el);
@@ -98,165 +246,231 @@ const StoryMockup = ({
   }, []);
 
   useEffect(() => {
-    const onVis = () =>
-      setIsPageVisible(document.visibilityState === "visible");
+    const onVis = () => setIsPageVisible(document.visibilityState === "visible");
     onVis();
     document.addEventListener("visibilitychange", onVis);
     return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
 
-  // Keep progress bar segments stable (equal widths) to avoid reflow/jitter as metadata loads.
-  const weights = useMemo(
-    () => new Array(storyItems.length).fill(1),
-    [storyItems.length]
-  );
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const preloaders = storyItems.map((story) => {
+      const v = document.createElement("video");
+      v.src = story.src;
+      v.preload = "auto";
+      v.muted = true;
+      v.playsInline = true;
+      v.load();
+      return v;
+    });
+
+    preloaderVideosRef.current = preloaders;
+
+    return () => {
+      preloaderVideosRef.current = [];
+      preloaders.forEach((v) => {
+        v.pause();
+        v.removeAttribute("src");
+        v.load();
+      });
+    };
+  }, [storyItems]);
 
   useEffect(() => {
-    let rafId: number;
-    const getProgressVideo = () =>
-      pendingIndex !== null ? pendingVideoRef.current : activeVideoRef.current;
-    const currentVideo = getProgressVideo();
-
-    if (!currentVideo) return;
-
-    // If the phone mockup is off-screen or the tab is hidden, don't fight the browser.
     if (!isInView || !isPageVisible) {
-      activeVideoRef.current?.pause();
-      pendingVideoRef.current?.pause();
-      activeProgress.set(0);
+      videoRefA.current?.pause();
+      videoRefB.current?.pause();
       return;
     }
 
-    const updateProgress = () => {
-      const v = getProgressVideo();
-      if (v?.duration) {
-        const current = (v.currentTime / v.duration) * 100;
-        // This updates the motion value at 60+ FPS
-        activeProgress.set(current);
-      }
-      rafId = requestAnimationFrame(updateProgress);
-    };
+    const activeVideo = getVideoRef(activeSlot).current;
+    if (!activeVideo) return;
 
-    // Reset and play
-    currentVideo.play().catch((err) => {
-      // Browsers may pause/abort background video to save power; that's expected.
+    activeVideo.play().catch((err) => {
       if (err?.name === "AbortError") return;
       if (err?.name === "NotAllowedError") return;
-      // Keep other unexpected errors visible during development.
       if (process.env.NODE_ENV !== "production") {
         console.warn("Video play failed:", err);
       }
     });
 
-    // Start animation loop
-    rafId = requestAnimationFrame(updateProgress);
+    if (progressRafRef.current !== null) {
+      window.cancelAnimationFrame(progressRafRef.current);
+      progressRafRef.current = null;
+    }
 
-    return () => {
-      currentVideo.pause();
-      cancelAnimationFrame(rafId);
-    };
-  }, [safeActiveIndex, pendingIndex, activeProgress, isInView, isPageVisible]);
-
-  // Start preloading/playing the pending video (muted) so it can render its first frame.
-  useEffect(() => {
-    if (pendingIndex === null) return;
-    const pendingVideo = pendingVideoRef.current;
-    if (!pendingVideo) return;
-
-    if (!isInView || !isPageVisible) return;
-
-    pendingVideo.currentTime = 0;
-    pendingVideo.play().catch((err) => {
-      if (err?.name === "AbortError") return;
-      if (err?.name === "NotAllowedError") return;
-      if (process.env.NODE_ENV !== "production") {
-        console.warn("Pending video play failed:", err);
+    const updateProgress = () => {
+      const v = getVideoRef(activeSlot).current;
+      if (v?.duration) {
+        activeProgress.set(getVideoProgress(v));
+        if (
+          count > 1 &&
+          targetIndex === null &&
+          v.duration - v.currentTime <= PRELOAD_AHEAD_SEC
+        ) {
+          requestTransition((activeIndex + 1) % count);
+        }
       }
-    });
-  }, [pendingIndex, isInView, isPageVisible]);
+      progressRafRef.current = window.requestAnimationFrame(updateProgress);
+    };
 
-  const handleTap = (e: React.MouseEvent<HTMLDivElement>) => {
+    progressRafRef.current = window.requestAnimationFrame(updateProgress);
+    return () => {
+      if (progressRafRef.current !== null) {
+        window.cancelAnimationFrame(progressRafRef.current);
+        progressRafRef.current = null;
+      }
+    };
+  }, [
+    activeSlot,
+    activeIndex,
+    targetIndex,
+    count,
+    requestTransition,
+    isInView,
+    isPageVisible,
+    activeProgress,
+    getVideoRef,
+    getVideoProgress,
+  ]);
+
+  const handleCanPlay = useCallback(
+    (slot: 0 | 1) => {
+      slotReadyRef.current[slot] = true;
+      if (targetSlot === slot) {
+        maybeStartPending();
+      }
+    },
+    [targetSlot, maybeStartPending]
+  );
+
+  const handleVideoEnded = useCallback(
+    (slot: 0 | 1, video: HTMLVideoElement) => {
+      if (slot !== activeSlot) return;
+
+      if (count <= 1) {
+        video.play().catch(() => {});
+        return;
+      }
+
+      if (targetIndex === null) {
+        requestTransition((activeIndex + 1) % count);
+      } else {
+        maybeStartPending();
+      }
+    },
+    [
+      activeSlot,
+      count,
+      targetIndex,
+      activeIndex,
+      requestTransition,
+      maybeStartPending,
+    ]
+  );
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    tapStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      t: performance.now(),
+      pointerId: e.pointerId,
+    };
+  };
+
+  const handlePointerCancel = () => {
+    tapStartRef.current = null;
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const start = tapStartRef.current;
+    tapStartRef.current = null;
+    if (!start) return;
+    if (start.pointerId !== e.pointerId) return;
+
+    const dx = Math.abs(e.clientX - start.x);
+    const dy = Math.abs(e.clientY - start.y);
+    const dt = performance.now() - start.t;
+
+    if (dx > TAP_MAX_MOVE_PX || dy > TAP_MAX_MOVE_PX || dt > TAP_MAX_DURATION_MS) {
+      return;
+    }
+
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
-    if (x < rect.width * 0.3) {
-      handlePrev();
-    } else {
-      handleNext();
+
+    if (x < rect.width * PREV_ZONE_RATIO) {
+      requestTransition((activeIndex - 1 + count) % count);
+      return;
+    }
+
+    if (x > rect.width * NEXT_ZONE_RATIO) {
+      requestTransition((activeIndex + 1) % count);
     }
   };
 
+  const getLayerStyle = (slot: 0 | 1) => {
+    const isActiveLayer = slot === activeSlot;
+    const isTargetLayer = slot === targetSlot;
+
+    let opacity = 0;
+    if (isActiveLayer) opacity = pendingVisible ? 0 : 1;
+    if (isTargetLayer) opacity = pendingVisible ? 1 : 0;
+
+    return {
+      opacity,
+      zIndex: isTargetLayer ? 2 : isActiveLayer ? 1 : 0,
+      transition: `opacity ${TRANSITION_MS}ms ease-out`,
+    } as const;
+  };
+
+  const weights = useMemo(
+    () => new Array(storyItems.length).fill(1),
+    [storyItems.length]
+  );
+
   return (
-    <div className="relative w-[350px]">
-      {/* CLIPPED STORY FRAME */}
+    <div className="relative w-[320px] sm:w-[350px]">
       <div
         ref={containerRef}
         className="relative aspect-9/16 rounded-[2.5rem] overflow-hidden border-4 border-white shadow-2xl bg-black cursor-pointer group"
-        onClick={handleTap}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
       >
-        {/* Active video layer */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <video
-            ref={activeVideoRef}
-            key={storyItems[safeActiveIndex]?.src}
-            src={storyItems[safeActiveIndex]?.src}
-            className="w-full h-full object-cover"
-            playsInline
-            muted
-            loop={count <= 1}
-            preload="auto"
-            onLoadedData={(e) => {
-              if (!isPromoting || pendingIndex === null) return;
-              const pendingVideo = pendingVideoRef.current;
-              if (pendingVideo) {
-                e.currentTarget.currentTime = pendingVideo.currentTime;
-              }
-              e.currentTarget.play().catch(() => {});
-              pendingVideoRef.current?.pause();
-              setPendingIndex(null);
-              setPendingReady(false);
-              setIsPromoting(false);
-            }}
-            onEnded={(e) => {
-              if (count <= 1) {
-                // Keep a single story replaying forever.
-                e.currentTarget.currentTime = 0;
-                e.currentTarget.play().catch(() => {});
-                return;
-              }
-              requestTransition((safeActiveIndex + 1) % count);
-            }}
-          />
-        </div>
+        {([0, 1] as const).map((slot) => {
+          const storyIndex = slotIndices[slot] ?? 0;
+          const src = storyItems[storyIndex]?.src;
+          if (!src) return null;
 
-        {/* Pending video layer */}
-        {pendingIndex !== null && (
-          <motion.div
-            className="absolute inset-0 z-1 pointer-events-none"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: pendingReady ? 1 : 0 }}
-            transition={{ duration: 0.32, ease: "easeOut" }}
-            onAnimationComplete={() => {
-              if (!pendingReady || pendingIndex === null) return;
-              setIsPromoting(true);
-              setActiveIndex(pendingIndex);
-            }}
-          >
-            <video
-              ref={pendingVideoRef}
-              key={storyItems[pendingIndex]?.src}
-              src={storyItems[pendingIndex]?.src}
-              className="w-full h-full object-cover"
-              playsInline
-              muted
-              preload="auto"
-              onLoadedData={() => setPendingReady(true)}
-            />
-          </motion.div>
-        )}
+          return (
+            <div
+              key={slot}
+              className="absolute inset-0 pointer-events-none"
+              style={getLayerStyle(slot)}
+            >
+              <video
+                ref={getVideoRef(slot)}
+                src={src}
+                className="w-full h-full object-cover"
+                playsInline
+                muted
+                preload="auto"
+                loop={count <= 1}
+                onCanPlay={() => handleCanPlay(slot)}
+                onLoadedData={() => {
+                  slotReadyRef.current[slot] = true;
+                  if (targetSlot === slot) {
+                    maybeStartPending();
+                  }
+                }}
+                onEnded={(e) => handleVideoEnded(slot, e.currentTarget)}
+              />
+            </div>
+          );
+        })}
 
-        {/* Top UI */}
         <div className="absolute inset-x-0 top-0 p-4 flex flex-col gap-4 bg-linear-to-b from-black/60 to-transparent z-20">
-          {/* Progress bars */}
           <div className="flex gap-1.5 w-full">
             {storyItems.map((_, index) => (
               <div
@@ -264,23 +478,22 @@ const StoryMockup = ({
                 className="h-[2px] bg-white/30 rounded-full overflow-hidden"
                 style={{ flexGrow: weights[index] ?? 1, flexBasis: 0 }}
               >
-                {index === committedIndex ? (
+                {index === activeIndex ? (
                   <motion.div
-                    key={committedIndex}
+                    key={activeIndex}
                     className="h-full bg-white"
                     style={{ width: progressWidth }}
                   />
                 ) : (
                   <div
                     className="h-full bg-white"
-                    style={{ width: index < committedIndex ? "100%" : "0%" }}
+                    style={{ width: index < activeIndex ? "100%" : "0%" }}
                   />
                 )}
               </div>
             ))}
           </div>
 
-          {/* User info */}
           {(userInfo?.username || userInfo?.profileImage?.url) && (
             <div className="flex items-center gap-3">
               {userInfo.profileImage?.url && (
@@ -311,7 +524,6 @@ const StoryMockup = ({
           )}
         </div>
 
-        {/* Bottom gradient */}
         <div className="absolute inset-x-0 bottom-0 h-32 bg-linear-to-t from-black/40 to-transparent z-10 pointer-events-none" />
       </div>
 

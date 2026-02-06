@@ -12,20 +12,6 @@ type Props = {
   results?: ClientResult[];
 };
 
-// Section-level reveal animation
-const sectionVariants = {
-  hidden: { 
-    opacity: 0,
-  },
-  show: {
-    opacity: 1,
-    transition: {
-      duration: 0.6,
-      ease: EASE_OUT,
-    },
-  },
-};
-
 // Individual result card animation
 const cardVariants = {
   hidden: { 
@@ -69,13 +55,7 @@ export default function ClientResults({ results }: Props) {
   const displayItems = items.slice(0, 3);
 
   return (
-    <motion.section 
-      className="w-full py-24"
-      initial={prefersReducedMotion ? false : "hidden"}
-      whileInView="show"
-      viewport={{ once: true, amount: 0.1 }}
-      variants={sectionVariants}
-    >
+    <section className="w-full py-24">
       <div className="max-w-6xl mx-auto px-6 flex flex-col gap-20">
         {displayItems.map((result, index) => {
           const isEven = index % 2 === 0;
@@ -109,7 +89,7 @@ export default function ClientResults({ results }: Props) {
                 <StaggerItem y={18}>
                   <Stagger
                     className="w-full grid grid-cols-1 sm:grid-cols-2 gap-10 pt-6"
-                    amount={0.5}
+                    amount={0.2}
                     stagger={0.1}
                     delayChildren={0.05}
                   >
@@ -201,14 +181,14 @@ export default function ClientResults({ results }: Props) {
               key={result._id}
               initial={prefersReducedMotion ? false : "hidden"}
               whileInView="show"
-              viewport={{ once: true, amount: 0.25 }}
+              viewport={{ once: true, amount: 0.08, margin: "0px 0px -12% 0px" }}
               variants={cardVariants}
             >
               <Stagger
                 className={`grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-center ${
                   !isEven ? "lg:[&>div:first-child]:order-2 lg:[&>div:last-child]:order-1" : ""
                 }`}
-                amount={0.4}
+                amount={0.18}
                 stagger={0.12}
                 delayChildren={0.04}
               >
@@ -219,6 +199,6 @@ export default function ClientResults({ results }: Props) {
           );
         })}
       </div>
-    </motion.section>
+    </section>
   );
 }

@@ -19,7 +19,7 @@ export default async function MainLayout({
     <TransitionProvider>
       <Header navLinks={mainNavigation} cta={ctaButton} />
       <PageTransition>
-        <main className="relative min-h-screen w-full overflow-x-hidden pt-16">
+        <main className="relative min-h-screen w-full overflow-x-hidden pt-[calc(4rem+env(safe-area-inset-top))]">
           {children}
           <Footer
             brandLabel={footer?.brandLabel}

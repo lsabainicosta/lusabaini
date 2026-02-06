@@ -12,6 +12,7 @@ type Props = {
 
 export default function LenisScroll({ wheelMultiplier = 0.75 }: Props) {
   const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
+  const [disableSmoothScroll, setDisableSmoothScroll] = React.useState(false);
 
   React.useEffect(() => {
     const mq = window.matchMedia?.("(prefers-reduced-motion: reduce)");
@@ -23,7 +24,16 @@ export default function LenisScroll({ wheelMultiplier = 0.75 }: Props) {
   }, []);
 
   React.useEffect(() => {
-    if (prefersReducedMotion) return;
+    const mq = window.matchMedia?.("(hover: none), (pointer: coarse)");
+    if (!mq) return;
+    const update = () => setDisableSmoothScroll(mq.matches);
+    update();
+    mq.addEventListener?.("change", update);
+    return () => mq.removeEventListener?.("change", update);
+  }, []);
+
+  React.useEffect(() => {
+    if (prefersReducedMotion || disableSmoothScroll) return;
 
     const lenis = new Lenis({
       autoRaf: true,
@@ -36,7 +46,7 @@ export default function LenisScroll({ wheelMultiplier = 0.75 }: Props) {
     return () => {
       lenis.destroy();
     };
-  }, [prefersReducedMotion, wheelMultiplier]);
+  }, [prefersReducedMotion, disableSmoothScroll, wheelMultiplier]);
 
   return null;
 }

@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/Logo";
 import TransitionLink from "@/components/motion/TransitionLink";
-import { EASE_OUT } from "@/components/motion/fade";
 import { useContactModal } from "@/components/contact";
 
 type NavLink = { href: string; label: string };
@@ -31,23 +29,13 @@ const Header = ({ navLinks, cta }: Props) => {
   const ctaLabel = cta?.label || "Get in touch";
 
   return (
-    <motion.header 
-      className="fixed inset-x-0 top-0 z-50 w-full bg-transparent"
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: EASE_OUT, delay: 0.1 }}
+    <header
+      className="fixed inset-x-0 top-0 z-50 w-full border-b border-black/10"
+      style={{
+        paddingTop: "env(safe-area-inset-top)",
+        backgroundColor: "var(--brand-color)",
+      }}
     >
-      {/* Progressive Blur Layer */}
-      <div
-        className="absolute inset-x-0 top-0 h-24 pointer-events-none -z-10"
-        style={{
-          backdropFilter: "blur(20px)",
-          maskImage: "linear-gradient(to bottom, black 0%, transparent 100%)",
-          WebkitMaskImage:
-            "linear-gradient(to bottom, black 0%, transparent 100%)",
-        }}
-      />
-
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         {/* Logo Section */}
         <Logo />
@@ -103,11 +91,15 @@ const Header = ({ navLinks, cta }: Props) => {
       {/* Custom Mobile Menu Overlay */}
       <div
         className={cn(
-          "fixed inset-0 z-40 bg-(--brand-color)/95 backdrop-blur-xl transition-all duration-300 ease-in-out md:hidden",
+          "fixed inset-0 z-40 transition-all duration-300 ease-in-out md:hidden",
           isMenuOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
         )}
+        style={{
+          paddingTop: "env(safe-area-inset-top)",
+          backgroundColor: "var(--brand-color)",
+        }}
       >
         <div className="flex flex-col items-start gap-6 px-6 pt-32 h-full">
           {links.map((link) => (
@@ -133,7 +125,7 @@ const Header = ({ navLinks, cta }: Props) => {
           </Button>
         </div>
       </div>
-    </motion.header>
+    </header>
   );
 };
 

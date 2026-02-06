@@ -179,7 +179,7 @@ const BrandLogos = ({ introText, logos }: Props) => {
             className="flex items-center gap-x-20 whitespace-nowrap py-2 w-max"
             style={{
               x: prefersReducedMotion ? 0 : x,
-              willChange: "transform",
+              willChange: prefersReducedMotion ? undefined : "transform",
               transform: "translateZ(0)",
             }}
           >
