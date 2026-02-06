@@ -11,7 +11,6 @@ export const footerSection = defineType({
     headlineEnd: '.',
     description:
       'I create TikTok & Instagram content designed to convert views into booked calls and sales.',
-    legalLinks: [],
   },
   fields: [
     defineField({
@@ -39,35 +38,6 @@ export const footerSection = defineType({
       name: 'description',
       title: 'Description',
       type: 'string',
-    }),
-    defineField({
-      name: 'legalLinks',
-      title: 'Legal Links',
-      description: 'Optional. Keep small and quiet.',
-      type: 'array',
-      of: [
-        defineField({
-          name: 'link',
-          title: 'Link',
-          type: 'object',
-          fields: [
-            defineField({
-              name: 'label',
-              title: 'Label',
-              type: 'string',
-              validation: (Rule) => Rule.required(),
-            }),
-            defineField({
-              name: 'href',
-              title: 'Href',
-              type: 'string',
-              validation: (Rule) => Rule.required(),
-            }),
-          ],
-          preview: {select: {title: 'label', subtitle: 'href'}},
-        }),
-      ],
-      validation: (Rule) => Rule.max(3),
     }),
   ],
   preview: {

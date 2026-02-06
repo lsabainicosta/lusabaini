@@ -18,9 +18,11 @@
     "@sanity/color-input": "^6.0.4",
     "@sanity/ui": "^3.1.11",
     "@sanity/vision": "^5.8.1",
+    "easymde": "^2.20.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "sanity": "^5.8.1",
+    "sanity-plugin-markdown": "^8.0.5",
     "styled-components": "^6.3.8"
   },
   "devDependencies": {

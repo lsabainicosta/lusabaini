@@ -25,10 +25,6 @@ const defaultNavLinks: NavLink[] = [
   { label: "My Work", href: "/my-work" },
 ];
 
-const defaultLegalLinks: FooterLink[] = [
-  { label: "Privacy Policy", href: "/privacy-policy" },
-];
-
 function isExternalHref(href: string) {
   return /^(https?:\/\/|mailto:|tel:)/i.test(href);
 }
@@ -100,29 +96,7 @@ export default function Footer({
     .slice(0, 3);
 
   const navLinks = resolvedNavLinks.length ? resolvedNavLinks : defaultNavLinks;
-  const privacyHref = "/privacy-policy";
-  const normalizedLegalLinks = [...resolvedLegalLinks];
-  const hasPrivacyLink = normalizedLegalLinks.some(
-    (l) => (l.href ?? "").trim() === privacyHref,
-  );
-
-  if (!hasPrivacyLink) {
-    normalizedLegalLinks.push(defaultLegalLinks[0]);
-  }
-
-  const bottomLegalLinks =
-    normalizedLegalLinks.length > 0 ? normalizedLegalLinks : defaultLegalLinks;
-
-  // Keep at most 3, but ensure Privacy Policy is visible.
-  const safeBottomLegalLinks = (() => {
-    if (bottomLegalLinks.length <= 3) return bottomLegalLinks;
-    const firstThree = bottomLegalLinks.slice(0, 3);
-    const privacyInFirstThree = firstThree.some(
-      (l) => (l.href ?? "").trim() === privacyHref,
-    );
-    if (privacyInFirstThree) return firstThree;
-    return [...firstThree.slice(0, 2), defaultLegalLinks[0]];
-  })();
+  const bottomLegalLinks = resolvedLegalLinks;
 
   const titleStart = headlineStart || "Short-form that turns attention into";
   const titleEmphasis = headlineEmphasis || "customers";
@@ -210,9 +184,9 @@ export default function Footer({
             <p>
               © {currentYear} {brandLabel || "lu sabaini"}
             </p>
-            {bottomLegalLinks.length ? (
+            {bottomLegalLinks.length > 0 ? (
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                {safeBottomLegalLinks.map((l, i) => (
+                {bottomLegalLinks.map((l, i) => (
                   <FooterNavLink
                     key={`${l.href}-${i}`}
                     href={l.href}

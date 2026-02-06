@@ -125,12 +125,11 @@ const shellQuery = `
     "headlineStart": coalesce(headlineStart, ""),
     "headlineEmphasis": coalesce(headlineEmphasis, ""),
     "headlineEnd": coalesce(headlineEnd, ""),
-    "description": coalesce(description, ""),
-    "legalLinks": legalLinks[]{
-      "label": coalesce(label, ""),
-      "href": coalesce(href, ""),
-      _key
-    }
+    "description": coalesce(description, "")
+  },
+  "legalPages": *[_type == "legalPage" && defined(slug.current)] | order(coalesce(order, 9999) asc, _updatedAt desc){
+    "slug": slug.current,
+    "label": coalesce(linkLabel, internalTitle, headlineStart, slug.current)
   }
 }
 `;
@@ -344,10 +343,40 @@ export async function getShellContent(): Promise<{
   siteSettings?: SiteSettings;
   footer?: FooterSettings;
 }> {
-  return cachedSanityFetch(shellQuery, {
+  const data = await cachedSanityFetch<{
+    siteSettings?: SiteSettings;
+    footer?: FooterSettings;
+    legalPages?: Array<{ slug?: string; label?: string }>;
+  }>(shellQuery, {
     tags: ["shell-content"],
     revalidate: 12 * 60 * 60,
   });
+
+  const toLabel = (value: string) =>
+    value
+      .replace(/[-_]+/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+
+  const legalLinks: FooterLink[] = (data.legalPages ?? [])
+    .map((item, index) => {
+      const slug = (item.slug ?? "").trim().toLowerCase();
+      if (!slug) return null;
+      const label = (item.label ?? "").trim() || toLabel(slug);
+      return {
+        _key: `legal-${slug}-${index}`,
+        label,
+        href: `/legal/${slug}`,
+      };
+    })
+    .filter(Boolean) as FooterLink[];
+
+  return {
+    siteSettings: data.siteSettings,
+    footer: {
+      ...data.footer,
+      legalLinks,
+    },
+  };
 }
 
 const homeSectionsQuery = `
@@ -595,6 +624,18 @@ export type MyWorkPageContent = {
   description?: string;
 };
 
+export type LegalPageContent = {
+  _id: string;
+  slug: string;
+  badgeLabel?: string;
+  headlineStart?: string;
+  headlineEmphasis?: string;
+  headlineEnd?: string;
+  description?: string;
+  lastUpdated?: string;
+  content?: string;
+};
+
 const myWorkPageQuery = `
 *[_type == "myWorkPage" && _id == "myWorkPage"][0]{
   "badgeLabel": coalesce(badgeLabel, "Partnerships"),
@@ -608,6 +649,43 @@ export async function getMyWorkPageContent(): Promise<MyWorkPageContent | null> 
     tags: ["my-work-page"],
     revalidate: 12 * 60 * 60,
   });
+}
+
+const legalPageFields = `{
+  _id,
+  "slug": coalesce(slug.current, ""),
+  "badgeLabel": coalesce(badgeLabel, "Legal"),
+  "headlineStart": coalesce(headlineStart, ""),
+  "headlineEmphasis": coalesce(headlineEmphasis, ""),
+  "headlineEnd": coalesce(headlineEnd, ""),
+  "description": coalesce(description, ""),
+  "lastUpdated": coalesce(lastUpdated, ""),
+  "content": coalesce(content, "")
+}`;
+
+export async function getLegalPageBySlug(slug: string): Promise<LegalPageContent | null> {
+  const sanitizedSlug = slug.replace(/[^a-zA-Z0-9-]/g, "").toLowerCase();
+  const query = `
+*[_type == "legalPage" && slug.current == "${sanitizedSlug}"][0]${legalPageFields}
+`;
+
+  return cachedSanityFetch(query, {
+    tags: ["legal-pages"],
+    revalidate: 12 * 60 * 60,
+  });
+}
+
+export async function getLegalPageSlugs(): Promise<string[]> {
+  const query = `
+*[_type == "legalPage" && defined(slug.current)].slug.current
+`;
+
+  const slugs = await cachedSanityFetch<string[]>(query, {
+    tags: ["legal-pages"],
+    revalidate: 12 * 60 * 60,
+  });
+
+  return (slugs ?? []).filter(Boolean);
 }
 
 // Not Found Page Types

@@ -2,6 +2,7 @@ import {createElement} from 'react'
 import {defineConfig} from 'sanity'
 import {visionTool} from '@sanity/vision'
 import {colorInput} from '@sanity/color-input'
+import {markdownSchema} from 'sanity-plugin-markdown'
 import { type ListItemBuilder, structureTool, type StructureBuilder} from 'sanity/structure'
 import TriggerWebhookButton from './components/TriggerWebhookButton'
 import {schemaTypes} from './schemaTypes'
@@ -41,6 +42,7 @@ export default defineConfig({
 
   plugins: [
     colorInput(),
+    markdownSchema(),
     structureTool({
       structure: (S: StructureBuilder) =>
         S.list()
