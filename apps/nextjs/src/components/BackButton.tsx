@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { useTransitionNavigation } from "@/components/motion/TransitionContext";
 
 type Props = {
   className?: string;
@@ -10,15 +11,14 @@ type Props = {
 
 export default function BackButton({ className, fallbackHref = "/my-work" }: Props) {
   const router = useRouter();
+  const { navigate } = useTransitionNavigation();
 
   const handleBack = () => {
-    // Check if there's history to go back to
-    if (window.history.length > 1) {
-      router.back();
-    } else {
-      // Fallback to specified href if no history
-      router.push(fallbackHref);
+    if (navigate) {
+      navigate(fallbackHref);
+      return;
     }
+    router.push(fallbackHref);
   };
 
   return (

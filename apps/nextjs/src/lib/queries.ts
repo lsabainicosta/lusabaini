@@ -4,10 +4,15 @@ import { createSlug } from "./utils";
 type ProfileImage = {
   url: string;
   alt?: string;
+  width?: number;
+  height?: number;
 };
 
 type MediaFile = {
   url: string;
+  posterUrl?: string;
+  width?: number;
+  height?: number;
   _key?: string;
 };
 
@@ -151,8 +156,31 @@ export type ClientResult = {
   imageOverlayText?: string;
   stats?: ClientResultStat[];
   socials?: SocialLink[];
-  additionalVideos?: MediaFile[];
+  relatedContentHeading?: string;
+  relatedContentDescription?: string;
+  relatedContent?: RelatedContentItem[];
 };
+
+export type RelatedContentMediaItem = {
+  _key?: string;
+  _type: "relatedMediaItem";
+  mediaType?: "image" | "video";
+  title?: string;
+  caption?: string;
+  description?: string;
+  image?: ProfileImage;
+  video?: MediaFile;
+};
+
+export type RelatedContentTextItem = {
+  _key?: string;
+  _type: "relatedTextItem";
+  eyebrow?: string;
+  title?: string;
+  body?: string;
+};
+
+export type RelatedContentItem = RelatedContentMediaItem | RelatedContentTextItem;
 
 export type ThemeSettings = {
   brandColor?: string;
@@ -169,10 +197,14 @@ const clientResultFields = `{
   "category": coalesce(category, ""),
   "image": {
     "url": coalesce(image.asset->url, ""),
-    "alt": coalesce(image.alt, clientName, "")
+    "alt": coalesce(image.alt, clientName, ""),
+    "width": image.asset->metadata.dimensions.width,
+    "height": image.asset->metadata.dimensions.height
   },
   "video": {
-    "url": coalesce(video.asset->url, "")
+    "url": coalesce(video.asset->url, ""),
+    "width": video.asset->metadata.dimensions.width,
+    "height": video.asset->metadata.dimensions.height
   },
   "imageOverlayText": coalesce(imageOverlayText, clientName, ""),
   "stats": stats[]{
@@ -189,9 +221,35 @@ const clientResultFields = `{
     "emailBody": coalesce(emailBody, ""),
     _key
   },
-  "additionalVideos": additionalVideos[]{
-    "url": coalesce(asset->url, ""),
-    _key
+  "relatedContentHeading": coalesce(relatedContentHeading, "Related Content"),
+  "relatedContentDescription": coalesce(relatedContentDescription, ""),
+  "relatedContent": relatedContent[]{
+    _key,
+    _type,
+    "mediaType": select(
+      _type == "relatedMediaItem" => coalesce(
+        mediaType,
+        select(defined(video.asset) => "video", "image")
+      ),
+      null
+    ),
+    "title": coalesce(title, ""),
+    "caption": coalesce(caption, ""),
+    "description": coalesce(description, ""),
+    "eyebrow": coalesce(eyebrow, ""),
+    "body": coalesce(body, ""),
+    "image": {
+      "url": coalesce(image.asset->url, ""),
+      "alt": coalesce(image.alt, title, caption, ""),
+      "width": image.asset->metadata.dimensions.width,
+      "height": image.asset->metadata.dimensions.height
+    },
+    "video": {
+      "url": coalesce(video.asset->url, ""),
+      "posterUrl": coalesce(videoPoster.asset->url, ""),
+      "width": video.asset->metadata.dimensions.width,
+      "height": video.asset->metadata.dimensions.height
+    }
   }
 } `;
 
@@ -444,13 +502,6 @@ export type AboutPageContent = {
   philosophyTitle?: string;
   philosophyContent?: string;
   values?: AboutValue[];
-  journeyTitle?: string;
-  journeyItems?: AboutJourneyItem[];
-  ctaHeadlineStart?: string;
-  ctaHeadlineEmphasis?: string;
-  ctaHeadlineEnd?: string;
-  ctaDescription?: string;
-  ctaButton?: CtaLink;
 };
 
 const aboutPageQuery = `
@@ -483,25 +534,6 @@ const aboutPageQuery = `
       "icon": coalesce(icon, "sparkles"),
       _key
     }
-  },
-  "journey": *[_type == "aboutJourneySection" && _id == "aboutJourneySection"][0]{
-    "journeyTitle": coalesce(journeyTitle, ""),
-    "journeyItems": journeyItems[]{
-      "year": coalesce(year, ""),
-      "title": coalesce(title, ""),
-      "description": coalesce(description, ""),
-      _key
-    }
-  },
-  "cta": *[_type == "aboutCtaSection" && _id == "aboutCtaSection"][0]{
-    "ctaHeadlineStart": coalesce(ctaHeadlineStart, ""),
-    "ctaHeadlineEmphasis": coalesce(ctaHeadlineEmphasis, ""),
-    "ctaHeadlineEnd": coalesce(ctaHeadlineEnd, ""),
-    "ctaDescription": coalesce(ctaDescription, ""),
-    "ctaButton": {
-      "label": coalesce(ctaButton.label, ""),
-      "href": coalesce(ctaButton.href, "")
-    }
   }
 }
 `;
@@ -532,17 +564,6 @@ export async function getAboutPageContent(): Promise<AboutPageContent | null> {
       philosophyContent?: string;
       values?: AboutValue[];
     };
-    journey?: {
-      journeyTitle?: string;
-      journeyItems?: AboutJourneyItem[];
-    };
-    cta?: {
-      ctaHeadlineStart?: string;
-      ctaHeadlineEmphasis?: string;
-      ctaHeadlineEnd?: string;
-      ctaDescription?: string;
-      ctaButton?: CtaLink;
-    };
   }>(aboutPageQuery, {
     tags: ["about-page"],
     revalidate: 12 * 60 * 60,
@@ -564,13 +585,6 @@ export async function getAboutPageContent(): Promise<AboutPageContent | null> {
     philosophyTitle: data.values?.philosophyTitle,
     philosophyContent: data.values?.philosophyContent,
     values: data.values?.values,
-    journeyTitle: data.journey?.journeyTitle,
-    journeyItems: data.journey?.journeyItems,
-    ctaHeadlineStart: data.cta?.ctaHeadlineStart,
-    ctaHeadlineEmphasis: data.cta?.ctaHeadlineEmphasis,
-    ctaHeadlineEnd: data.cta?.ctaHeadlineEnd,
-    ctaDescription: data.cta?.ctaDescription,
-    ctaButton: data.cta?.ctaButton,
   };
 }
 

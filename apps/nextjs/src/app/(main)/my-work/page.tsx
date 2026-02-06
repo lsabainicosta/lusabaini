@@ -24,7 +24,7 @@ export default async function CaseStudiesPage() {
 
             {pageContent?.headline && (
               <Reveal>
-                <h1 className="text-6xl sm:text-7xl lg:text-8xl font-medium tracking-[-0.04em] leading-[0.9] text-black">
+                <h1 className="text-5xl lg:text-7xl font-medium tracking-[-0.04em] leading-[0.9] text-black">
                   {pageContent.headline}
                 </h1>
               </Reveal>
@@ -74,7 +74,7 @@ export default async function CaseStudiesPage() {
 
                           {overlay ? (
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="text-white text-4xl sm:text-5xl font-serif tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] max-w-md text-center">
+                              <div className="max-w-md text-center text-white text-4xl sm:text-5xl font-medium leading-[0.92] tracking-[-0.04em] drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
                                 {overlay}
                               </div>
                             </div>

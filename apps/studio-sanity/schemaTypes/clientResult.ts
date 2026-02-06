@@ -229,17 +229,174 @@ export const clientResult = defineType({
       validation: (Rule) => Rule.max(6),
     }),
     defineField({
-      name: 'additionalVideos',
-      title: 'Additional Videos',
+      name: 'relatedContentHeading',
+      title: 'Related content heading',
+      type: 'string',
+      description: 'Section heading shown above the media grid.',
+      initialValue: 'Related Content',
+    }),
+    defineField({
+      name: 'relatedContentDescription',
+      title: 'Related content description',
+      type: 'text',
+      rows: 3,
+      description: 'Optional intro text shown under the related content heading.',
+    }),
+    defineField({
+      name: 'relatedContent',
+      title: 'Related Content',
       type: 'array',
-      description: 'Gallery of videos shown beneath the project info.',
+      description:
+        'Add as many photos, videos, and text notes as needed. Items are displayed in this order.',
       of: [
-        {
-          type: 'file',
-          options: {
-            accept: 'video/*',
+        defineField({
+          name: 'relatedMediaItem',
+          title: 'Media item',
+          type: 'object',
+          fields: [
+            defineField({
+              name: 'mediaType',
+              title: 'Media type',
+              type: 'string',
+              initialValue: 'video',
+              options: {
+                list: [
+                  {title: 'Video', value: 'video'},
+                  {title: 'Image', value: 'image'},
+                ],
+                layout: 'radio',
+              },
+            }),
+            defineField({
+              name: 'title',
+              title: 'Title',
+              type: 'string',
+              description: 'Optional title shown on top of the media.',
+            }),
+            defineField({
+              name: 'caption',
+              title: 'Caption',
+              type: 'string',
+              description: 'Short label shown with the media.',
+            }),
+            defineField({
+              name: 'description',
+              title: 'Description',
+              type: 'text',
+              rows: 3,
+              description: 'Optional extra context shown under the title/caption.',
+            }),
+            defineField({
+              name: 'image',
+              title: 'Image',
+              type: 'image',
+              options: {hotspot: true},
+              hidden: ({parent}) => (parent as {mediaType?: string})?.mediaType === 'video',
+              fields: [
+                defineField({
+                  name: 'alt',
+                  title: 'Alt text',
+                  type: 'string',
+                  description: 'Accessibility text for this image.',
+                }),
+              ],
+            }),
+            defineField({
+              name: 'video',
+              title: 'Video',
+              type: 'file',
+              options: {
+                accept: 'video/*',
+              },
+              hidden: ({parent}) => (parent as {mediaType?: string})?.mediaType === 'image',
+            }),
+            defineField({
+              name: 'videoPoster',
+              title: 'Video poster image',
+              type: 'image',
+              options: {hotspot: true},
+              description: 'Optional fallback image shown before the video starts.',
+              hidden: ({parent}) => (parent as {mediaType?: string})?.mediaType === 'image',
+            }),
+          ],
+          validation: (Rule) =>
+            Rule.custom((value) => {
+              const item = value as
+                | {mediaType?: string; image?: unknown; video?: unknown}
+                | undefined
+              if (!item) return true
+
+              const mediaType = item.mediaType === 'image' ? 'image' : 'video'
+              if (mediaType === 'video' && !item.video) {
+                return 'Please upload a video file.'
+              }
+              if (mediaType === 'image' && !item.image) {
+                return 'Please upload an image.'
+              }
+              return true
+            }),
+          preview: {
+            select: {
+              mediaType: 'mediaType',
+              title: 'title',
+              caption: 'caption',
+              image: 'image',
+              videoFilename: 'video.asset.originalFilename',
+            },
+            prepare({mediaType, title, caption, image, videoFilename}) {
+              const label = mediaType === 'image' ? 'Image' : 'Video'
+              const resolvedTitle = title || caption || `${label} item`
+              const subtitle =
+                mediaType === 'image'
+                  ? 'Image'
+                  : videoFilename
+                    ? `Video · ${videoFilename}`
+                    : 'Video'
+
+              return {
+                title: resolvedTitle,
+                subtitle,
+                media: image,
+              }
+            },
           },
-        },
+        }),
+        defineField({
+          name: 'relatedTextItem',
+          title: 'Text note',
+          type: 'object',
+          fields: [
+            defineField({
+              name: 'eyebrow',
+              title: 'Eyebrow',
+              type: 'string',
+              description: 'Small label, for example: Strategy, Insight, Result.',
+            }),
+            defineField({
+              name: 'title',
+              title: 'Title',
+              type: 'string',
+              description: 'Short headline for this text block.',
+            }),
+            defineField({
+              name: 'body',
+              title: 'Body',
+              type: 'text',
+              rows: 5,
+              description: 'Main text shown as an explanatory note.',
+              validation: (Rule) => Rule.required(),
+            }),
+          ],
+          preview: {
+            select: {title: 'title', subtitle: 'body'},
+            prepare({title, subtitle}) {
+              return {
+                title: title || 'Text note',
+                subtitle,
+              }
+            },
+          },
+        }),
       ],
     }),
   ],

@@ -40,11 +40,11 @@ export default function AboutStory({ title, content, image }: Props) {
               {...(disableEnterAnimationsAtMount
                 ? { initial: false }
                 : {
-                    initial: { opacity: 0, x: -30 },
-                    whileInView: { opacity: 1, x: 0 },
-                    viewport: { once: true, amount: 0.4 },
+                    initial: { opacity: 0, y: 22 },
+                    whileInView: { opacity: 1, y: 0 },
+                    viewport: { once: true, amount: 0.2, margin: "0px 0px -8% 0px" },
                     transition: {
-                      duration: 0.85,
+                      duration: 0.62,
                       ease: EASE_OUT,
                       delay: FADE_IN_DELAY,
                     },
@@ -52,7 +52,7 @@ export default function AboutStory({ title, content, image }: Props) {
             >
               <div className="relative w-[300px] h-[380px] lg:w-[360px] lg:h-[440px]">
                 <div className="absolute inset-0 rounded-[2rem] bg-linear-to-br from-(--brand-color) to-(--brand-dark) opacity-15 blur-xl -rotate-3" />
-                <div className="relative w-full h-full rounded-[2rem] overflow-hidden border-4 border-white shadow-xl rotate-2 hover:rotate-0 transition-transform duration-500">
+                <div className="relative w-full h-full rounded-[2rem] overflow-hidden border-4 border-white shadow-xl rotate-2 md:hover:rotate-0 transition-transform duration-500">
                   <Image
                     src={imageUrl}
                     alt={imageAlt}
@@ -73,9 +73,9 @@ export default function AboutStory({ title, content, image }: Props) {
               : {
                   initial: { opacity: 0, y: 26 },
                   whileInView: { opacity: 1, y: 0 },
-                  viewport: { once: true, amount: 0.5 },
+                  viewport: { once: true, amount: 0.2, margin: "0px 0px -8% 0px" },
                   transition: {
-                    duration: 0.85,
+                    duration: 0.62,
                     ease: EASE_OUT,
                     delay: FADE_IN_DELAY,
                   },

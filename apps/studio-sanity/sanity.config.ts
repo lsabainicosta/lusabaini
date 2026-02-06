@@ -20,8 +20,6 @@ const singletonTypes = new Set([
   'aboutHeroSection',
   'aboutStorySection',
   'aboutValuesSection',
-  'aboutJourneySection',
-  'aboutCtaSection',
   'myWorkPage',
   'notFoundPage',
   'notFoundContentSection',
@@ -99,12 +97,6 @@ export default defineConfig({
                     S.listItem()
                       .title('Values & Philosophy')
                       .child(S.document().schemaType('aboutValuesSection').documentId('aboutValuesSection')),
-                    S.listItem()
-                      .title('Journey Timeline')
-                      .child(S.document().schemaType('aboutJourneySection').documentId('aboutJourneySection')),
-                    S.listItem()
-                      .title('Call to Action')
-                      .child(S.document().schemaType('aboutCtaSection').documentId('aboutCtaSection')),
                   ])
               ),
             S.listItem()

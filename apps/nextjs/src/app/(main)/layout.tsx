@@ -1,4 +1,5 @@
 import PageTransition from "@/components/motion/PageTransition";
+import TransitionShell from "@/components/motion/TransitionShell";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getShellContent } from "@/lib/queries";
@@ -16,23 +17,25 @@ export default async function MainLayout({
   const socials = siteSettings?.socials;
 
   return (
-    <TransitionProvider>
+    <TransitionProvider exitDurationMs={420}>
       <Header navLinks={mainNavigation} cta={ctaButton} />
       <PageTransition>
-        <main className="relative min-h-screen w-full overflow-x-hidden pt-[calc(4rem+env(safe-area-inset-top))]">
-          {children}
-          <Footer
-            brandLabel={footer?.brandLabel}
-            headlineStart={footer?.headlineStart}
-            headlineEmphasis={footer?.headlineEmphasis}
-            headlineEnd={footer?.headlineEnd}
-            description={footer?.description}
-            socials={socials}
-            navigationLinks={mainNavigation}
-            legalLinks={footer?.legalLinks}
-            cta={ctaButton}
-          />
-        </main>
+        <TransitionShell>
+          <main className="relative min-h-screen w-full overflow-x-hidden pt-[calc(4rem+env(safe-area-inset-top))]">
+            {children}
+            <Footer
+              brandLabel={footer?.brandLabel}
+              headlineStart={footer?.headlineStart}
+              headlineEmphasis={footer?.headlineEmphasis}
+              headlineEnd={footer?.headlineEnd}
+              description={footer?.description}
+              socials={socials}
+              navigationLinks={mainNavigation}
+              legalLinks={footer?.legalLinks}
+              cta={ctaButton}
+            />
+          </main>
+        </TransitionShell>
       </PageTransition>
     </TransitionProvider>
   );

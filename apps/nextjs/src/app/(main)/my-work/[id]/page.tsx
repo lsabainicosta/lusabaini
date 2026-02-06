@@ -10,6 +10,7 @@ import TransitionLink from "@/components/motion/TransitionLink";
 import BackButton from "@/components/BackButton";
 import { ArrowRight } from "lucide-react";
 import SocialLinks from "@/components/SocialLinks";
+import RelatedContentGallery from "@/components/work/RelatedContentGallery";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -47,11 +48,19 @@ export default async function WorkDetailPage({ params }: Props) {
   const description = result.description || "";
   const category = result.category || "";
   const year = new Date().getFullYear().toString(); // Default to current year, can be updated later
+  const curatedRelatedContent = (result.relatedContent ?? []).filter((item) => {
+    if (item._type === "relatedTextItem") {
+      return Boolean(item.title?.trim() || item.body?.trim() || item.eyebrow?.trim());
+    }
+
+    const isVideo = item.mediaType === "video" || Boolean(item.video?.url);
+    return isVideo ? Boolean(item.video?.url) : Boolean(item.image?.url);
+  });
 
   return (
     <>
       {/* Hero Section */}
-      <section className="w-full pt-20 pb-6">
+      <section className="w-full pt-20 pb-8">
         <div className="max-w-6xl mx-auto px-6">
           <div className="relative h-[500px] w-full overflow-hidden rounded-[2.5rem] border-4 border-white shadow-2xl">
             {/* Background Image/Video */}
@@ -98,13 +107,13 @@ export default async function WorkDetailPage({ params }: Props) {
             )}
 
             {/* Title and Description Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
+            <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-7 md:p-12">
               <div className="max-w-3xl">
-                <h1 className="mb-4 text-5xl font-medium tracking-[-0.04em] text-white md:text-6xl lg:text-7xl">
+                <h1 className="mb-3 text-[clamp(2rem,8.4vw,3.3rem)] font-medium leading-[0.92] tracking-[-0.04em] text-white md:mb-4 md:text-6xl lg:text-7xl">
                   {title}
                 </h1>
                 {description && (
-                  <p className="text-lg text-white/90 md:text-xl max-w-2xl">
+                  <p className="max-w-2xl text-base leading-[1.3] text-white/90 md:text-xl">
                     {description}
                   </p>
                 )}
@@ -115,7 +124,7 @@ export default async function WorkDetailPage({ params }: Props) {
       </section>
 
       {/* Info Section */}
-      <section className="w-full pb-12">
+      <section className="w-full pb-8">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-wrap items-start justify-between gap-8 md:gap-12 bg-white/35 border border-black/10 rounded-[1rem] px-10 py-6">
             {/* Category */}
@@ -131,7 +140,7 @@ export default async function WorkDetailPage({ params }: Props) {
             {/* Platforms/Socials */}
             <div>
               <div className="text-sm font-medium text-black/60 mb-2">
-                Socials
+                See the work for this brand
               </div>
               {result.socials && result.socials.length > 0 ? (
                 <SocialLinks socials={result.socials} />
@@ -149,31 +158,11 @@ export default async function WorkDetailPage({ params }: Props) {
         </div>
       </section>
 
-      {/* Additional Videos Section */}
-      {result.additionalVideos && result.additionalVideos.length > 0 && (
-        <section className="w-full pb-24">
-          <div className="max-w-6xl mx-auto px-6">
-            <h2 className="text-3xl font-medium tracking-tight mb-8">
-              Related Content
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {result.additionalVideos.map((video, index) => (
-                <div
-                  key={video._key || index}
-                  className="relative aspect-9/16 md:aspect-video w-full overflow-hidden rounded-2xl border-4 border-white shadow-lg bg-black/5"
-                >
-                  <video
-                    src={video.url}
-                    controls
-                    playsInline
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      <RelatedContentGallery
+        title={result.relatedContentHeading || "Related Content"}
+        description={result.relatedContentDescription}
+        items={curatedRelatedContent}
+      />
     </>
   );
 }

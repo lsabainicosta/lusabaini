@@ -42,7 +42,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#fce4ef",
+  themeColor: "transparent",
 };
 
 function clampChannel(value: number) {

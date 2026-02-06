@@ -60,10 +60,21 @@ export default function AboutValues({
   philosophyContent,
   values,
 }: Props) {
+  const [isTouchDevice, setIsTouchDevice] = React.useState(false);
   const { disableEnterAnimations } = useRouteTransition();
   const [disableEnterAnimationsAtMount] = React.useState(
     () => disableEnterAnimations
   );
+  const shouldDisableCardAnimations = disableEnterAnimationsAtMount;
+
+  React.useEffect(() => {
+    const mq = window.matchMedia?.("(hover: none), (pointer: coarse)");
+    if (!mq) return;
+    const update = () => setIsTouchDevice(mq.matches);
+    update();
+    mq.addEventListener?.("change", update);
+    return () => mq.removeEventListener?.("change", update);
+  }, []);
 
   const sectionTitle = philosophyTitle || "Philosophy";
   const sectionContent =
@@ -72,17 +83,26 @@ export default function AboutValues({
 
   const displayValues = values?.length ? values : defaultValues;
 
+  const cardsContainerVariants = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: 0.08,
+        delayChildren: 0.02,
+      },
+    },
+  };
+
   const cardVariants = {
-    hidden: { opacity: 0, y: 28 },
-    show: (index: number) => ({
+    hidden: { opacity: 0, y: isTouchDevice ? 0 : 28 },
+    show: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.85,
+        duration: 0.62,
         ease: EASE_OUT,
-        delay: index * 0.1,
       },
-    }),
+    },
   };
 
   return (
@@ -96,9 +116,9 @@ export default function AboutValues({
             : {
                 initial: { opacity: 0, y: 26 },
                 whileInView: { opacity: 1, y: 0 },
-                viewport: { once: true, amount: 0.75 },
+                viewport: { once: true, amount: 0.25, margin: "0px 0px -8% 0px" },
                 transition: {
-                  duration: 0.85,
+                  duration: 0.62,
                   ease: EASE_OUT,
                   delay: FADE_IN_DELAY,
                 },
@@ -113,25 +133,28 @@ export default function AboutValues({
         </motion.div>
 
         {/* Values Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          {...(shouldDisableCardAnimations
+            ? { initial: false }
+            : {
+                initial: "hidden",
+                whileInView: "show",
+                viewport: { once: true, amount: 0.12, margin: "0px 0px -10% 0px" },
+                variants: cardsContainerVariants,
+              })}
+        >
           {displayValues.map((value, index) => {
             const IconComponent = iconMap[value.icon || "sparkles"] || Sparkles;
             return (
               <motion.div
                 key={value._key || index}
-                className="group relative rounded-[2rem] p-7 md:p-8 flex flex-col gap-5 bg-[oklch(1_0_0/0.58)] backdrop-blur-lg ring-1 ring-foreground/10 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:bg-[oklch(1_0_0/0.7)] hover:shadow-[0_14px_40px_rgba(0,0,0,0.12)] hover:-translate-y-1"
-                {...(disableEnterAnimationsAtMount
+                className="group relative rounded-[2rem] p-7 md:p-8 flex flex-col gap-5 bg-[oklch(1_0_0/0.58)] md:backdrop-blur-lg ring-1 ring-foreground/10 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-[background-color,box-shadow] duration-300 hover:bg-[oklch(1_0_0/0.7)] hover:shadow-[0_14px_40px_rgba(0,0,0,0.12)] md:hover:-translate-y-1"
+                style={isTouchDevice ? { WebkitTransform: "translateZ(0)" } : undefined}
+                {...(shouldDisableCardAnimations
                   ? { initial: false }
                   : {
-                      initial: "hidden",
-                      whileInView: "show",
-                      viewport: {
-                        once: true,
-                        amount: 0.2,
-                        margin: "0px 0px -10% 0px",
-                      },
                       variants: cardVariants,
-                      custom: index,
                     })}
               >
                 {/* Icon */}
@@ -153,7 +176,7 @@ export default function AboutValues({
               </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

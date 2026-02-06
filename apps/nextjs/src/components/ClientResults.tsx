@@ -3,14 +3,24 @@
 import * as React from "react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-import type { ClientResult } from "@/lib/queries";
+import type { ClientResult, ClientResultStat } from "@/lib/queries";
 import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import { motion } from "motion/react";
 import { EASE_OUT } from "@/components/motion/fade";
+import TransitionLink from "@/components/motion/TransitionLink";
+import { createSlug } from "@/lib/utils";
 
 type Props = {
   results?: ClientResult[];
 };
+
+function hasText(value?: string) {
+  return Boolean(value?.trim());
+}
+
+function hasStatContent(stat: ClientResultStat) {
+  return hasText(stat.value) || hasText(stat.label) || hasText(stat.subLabel);
+}
 
 // Individual result card animation
 const cardVariants = {
@@ -42,12 +52,17 @@ export default function ClientResults({ results }: Props) {
     return () => mq.removeEventListener?.("change", update);
   }, []);
 
-  const items = (results ?? []).filter(
-    (r) =>
-      (r.headlineStart && r.headlineEmphasis) ||
-      (r.description && (r.image?.url || r.video?.url)) ||
-      (r.stats?.length ?? 0) > 0
-  );
+  const items = (results ?? [])
+    .map((result) => ({
+      ...result,
+      stats: (result.stats ?? []).filter(hasStatContent),
+    }))
+    .filter(
+      (r) =>
+        (r.headlineStart && r.headlineEmphasis) ||
+        (r.description && (r.image?.url || r.video?.url)) ||
+        (r.stats?.length ?? 0) > 0
+    );
 
   if (items.length === 0) return null;
 
@@ -59,6 +74,11 @@ export default function ClientResults({ results }: Props) {
       <div className="max-w-6xl mx-auto px-6 flex flex-col gap-20">
         {displayItems.map((result, index) => {
           const isEven = index % 2 === 0;
+          const slug = result.clientName ? createSlug(result.clientName) : result._id;
+          const href = `/my-work/${slug}`;
+          const linkLabel = result.clientName
+            ? `Open ${result.clientName} case study`
+            : "Open case study";
           const TextContent = (
             <div className="flex flex-col items-start gap-8">
               <StaggerItem>
@@ -184,17 +204,25 @@ export default function ClientResults({ results }: Props) {
               viewport={{ once: true, amount: 0.08, margin: "0px 0px -12% 0px" }}
               variants={cardVariants}
             >
-              <Stagger
-                className={`grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-center ${
-                  !isEven ? "lg:[&>div:first-child]:order-2 lg:[&>div:last-child]:order-1" : ""
-                }`}
-                amount={0.18}
-                stagger={0.12}
-                delayChildren={0.04}
+              <TransitionLink
+                href={href}
+                aria-label={linkLabel}
+                className="block rounded-[2.75rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/40 focus-visible:ring-offset-4 focus-visible:ring-offset-pink-100"
               >
-                {TextContent}
-                {ImageContent}
-              </Stagger>
+                <Stagger
+                  className={`grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-center ${
+                    !isEven
+                      ? "lg:[&>div:first-child]:order-2 lg:[&>div:last-child]:order-1"
+                      : ""
+                  }`}
+                  amount={0.18}
+                  stagger={0.12}
+                  delayChildren={0.04}
+                >
+                  {TextContent}
+                  {ImageContent}
+                </Stagger>
+              </TransitionLink>
             </motion.div>
           );
         })}

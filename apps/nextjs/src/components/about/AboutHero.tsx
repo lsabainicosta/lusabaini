@@ -66,13 +66,13 @@ export default function AboutHero({
             className="flex-1 flex flex-col gap-7"
             initial={shouldDisableMountAnimation ? false : "hidden"}
             animate={shouldDisableMountAnimation ? undefined : "show"}
-            variants={fadeInUpVariants({ y: 28, delay: FADE_IN_DELAY })}
+            variants={fadeInUpVariants({ y: 20, duration: 0.62, delay: FADE_IN_DELAY })}
           >
             <Badge className="w-fit px-4 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-foreground/5 text-foreground/70 ring-1 ring-foreground/10 backdrop-blur">
               {badge}
             </Badge>
 
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-medium tracking-[-0.04em] leading-[0.9] text-black">
+            <h1 className="text-5xl lg:text-7xl font-medium tracking-[-0.04em] leading-[0.9] text-black">
               {titleStart}{" "}
               <span className="italic font-serif">{titleEmphasis}</span>
               {titleEnd ? ` ${titleEnd}` : ""}
@@ -89,7 +89,7 @@ export default function AboutHero({
               className="shrink-0"
               initial={shouldDisableMountAnimation ? false : "hidden"}
               animate={shouldDisableMountAnimation ? undefined : "show"}
-              variants={fadeInUpVariants({ y: 28, delay: 0.18 })}
+              variants={fadeInUpVariants({ y: 20, duration: 0.62, delay: 0.12 })}
             >
               <div className="relative w-[320px] h-[400px] lg:w-[380px] lg:h-[480px]">
                 <div className="absolute inset-0 rounded-[2.5rem] bg-linear-to-br from-(--brand-color) to-(--brand-dark) opacity-20 blur-2xl" />
@@ -110,7 +110,7 @@ export default function AboutHero({
               className="shrink-0"
               initial={shouldDisableMountAnimation ? false : "hidden"}
               animate={shouldDisableMountAnimation ? undefined : "show"}
-              variants={fadeInUpVariants({ y: 28, delay: 0.18 })}
+              variants={fadeInUpVariants({ y: 20, duration: 0.62, delay: 0.12 })}
             >
               <div className="relative w-[320px] h-[400px] lg:w-[380px] lg:h-[480px]">
                 <div className="absolute inset-0 rounded-[2.5rem] bg-linear-to-br from-(--brand-color) to-(--brand-dark) opacity-30" />

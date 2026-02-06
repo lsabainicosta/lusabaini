@@ -9,8 +9,6 @@ import {aboutPage} from './aboutPage'
 import {aboutHeroSection} from './aboutHeroSection'
 import {aboutStorySection} from './aboutStorySection'
 import {aboutValuesSection} from './aboutValuesSection'
-import {aboutJourneySection} from './aboutJourneySection'
-import {aboutCtaSection} from './aboutCtaSection'
 import {myWorkPage} from './myWorkPage'
 import {notFoundPage} from './notFoundPage'
 import {notFoundContentSection} from './notFoundContentSection'
@@ -30,8 +28,6 @@ export const schemaTypes = [
   aboutHeroSection,
   aboutStorySection,
   aboutValuesSection,
-  aboutJourneySection,
-  aboutCtaSection,
   myWorkPage,
   notFoundPage,
   notFoundContentSection,
