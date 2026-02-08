@@ -5,6 +5,9 @@ export const aboutHeroSection = defineType({
   title: 'About Hero',
   type: 'document',
   initialValue: {
+    seoTitle: 'About',
+    seoDescription:
+      'Learn more about Luiza Sabaini Costa, her content philosophy, and the approach behind high-performing social media campaigns.',
     badgeLabel: 'About me',
     headlineStart: 'The creator behind the',
     headlineEmphasis: 'content',
@@ -40,6 +43,19 @@ export const aboutHeroSection = defineType({
       title: 'Hero Description',
       type: 'text',
       rows: 3,
+    }),
+    defineField({
+      name: 'seoTitle',
+      title: 'SEO Title',
+      type: 'string',
+      description: 'About page title used in search and browser tabs.',
+    }),
+    defineField({
+      name: 'seoDescription',
+      title: 'SEO Description',
+      type: 'text',
+      rows: 3,
+      description: 'About page description used for search snippets and social previews.',
     }),
     defineField({
       name: 'profileImage',

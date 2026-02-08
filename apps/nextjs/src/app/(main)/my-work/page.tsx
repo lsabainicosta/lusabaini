@@ -1,16 +1,72 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Reveal from "@/components/motion/Reveal";
 import { Badge } from "@/components/ui/badge";
-import { getClientResults, getMyWorkPageContent } from "@/lib/queries";
-import { createSlug } from "@/lib/utils";
+import {
+  getClientResults,
+  getMyWorkPageContent,
+  resolveClientResultSlug,
+} from "@/lib/queries";
 import TransitionLink from "@/components/motion/TransitionLink";
+import JsonLd from "@/components/seo/JsonLd";
+import { buildCanonicalUrl, buildPageMetadata } from "@/lib/seo";
+
+const MY_WORK_TITLE = "My Work";
+const MY_WORK_DESCRIPTION =
+  "Explore case studies, campaign outcomes, and short-form social media work delivered by Luiza Sabaini Costa.";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const pageContent = await getMyWorkPageContent();
+  const title = pageContent?.seoTitle?.trim() || MY_WORK_TITLE;
+  const description =
+    pageContent?.seoDescription?.trim() || MY_WORK_DESCRIPTION;
+  return buildPageMetadata({
+    pathname: "/my-work",
+    title,
+    description,
+  });
+}
 
 export default async function CaseStudiesPage() {
   const results = await getClientResults();
   const pageContent = await getMyWorkPageContent();
+  const caseStudyItems = (results ?? [])
+    .map((result, index) => {
+      const slug = resolveClientResultSlug(result);
+      if (!slug) return null;
+
+      return {
+        "@type": "ListItem",
+        position: index + 1,
+        name:
+          result.clientName ||
+          result.imageOverlayText ||
+          result.headlineEmphasis ||
+          "Case study",
+        url: buildCanonicalUrl(`/my-work/${slug}`),
+      };
+    })
+    .filter(
+      (
+        item
+      ): item is {
+        "@type": "ListItem";
+        position: number;
+        name: string;
+        url: string;
+      } => item !== null
+    );
+
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Case Studies by Luiza Sabaini Costa",
+    itemListElement: caseStudyItems,
+  };
 
   return (
     <>
+      <JsonLd id="my-work-itemlist-schema" data={itemListSchema} />
       <section className="w-full pt-20 pb-10">
         <div className="max-w-6xl mx-auto px-6">
           <div className="max-w-3xl flex flex-col gap-7">
@@ -52,7 +108,7 @@ export default async function CaseStudiesPage() {
                 "Case study";
               const category = result.category?.trim();
               const overlay = result.imageOverlayText || result.clientName;
-              const slug = result.clientName ? createSlug(result.clientName) : result._id;
+              const slug = resolveClientResultSlug(result);
               const href = `/my-work/${slug}`;
 
               return (

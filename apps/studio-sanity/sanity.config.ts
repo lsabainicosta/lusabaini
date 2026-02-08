@@ -22,6 +22,7 @@ const singletonTypes = new Set([
   'aboutStorySection',
   'aboutValuesSection',
   'myWorkPage',
+  'contactPage',
   'notFoundPage',
   'notFoundContentSection',
   'notFoundButtonsSection',
@@ -104,6 +105,9 @@ export default defineConfig({
             S.listItem()
               .title('My Work Page')
               .child(S.document().schemaType('myWorkPage').documentId('myWorkPage')),
+            S.listItem()
+              .title('Contact Page')
+              .child(S.document().schemaType('contactPage').documentId('contactPage')),
             S.listItem()
               .title('Not Found Page')
               .child(

@@ -6,8 +6,12 @@ export const myWorkPage = defineType({
   type: 'document',
   groups: [
     {name: 'hero', title: 'Hero Section'},
+    {name: 'seo', title: 'SEO'},
   ],
   initialValue: {
+    seoTitle: 'My Work',
+    seoDescription:
+      'Explore case studies, campaign outcomes, and short-form social media work delivered by Luiza Sabaini Costa.',
     badgeLabel: 'Partnerships',
     headline: 'My best work',
     description:
@@ -33,6 +37,21 @@ export const myWorkPage = defineType({
       type: 'text',
       rows: 4,
       group: 'hero',
+    }),
+    defineField({
+      name: 'seoTitle',
+      title: 'SEO Title',
+      type: 'string',
+      group: 'seo',
+      description: 'My Work page title used in search and browser tabs.',
+    }),
+    defineField({
+      name: 'seoDescription',
+      title: 'SEO Description',
+      type: 'text',
+      rows: 3,
+      group: 'seo',
+      description: 'My Work page description used for search snippets and social previews.',
     }),
   ],
   preview: {

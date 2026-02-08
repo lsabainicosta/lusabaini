@@ -16,6 +16,7 @@ import {notFoundButtonsSection} from './notFoundButtonsSection'
 import {notFoundVisualSection} from './notFoundVisualSection'
 import {linktreePage} from './linktreePage'
 import {legalPage} from './legalPage'
+import {contactPage} from './contactPage'
 
 export const schemaTypes = [
   brandingSection,
@@ -36,4 +37,5 @@ export const schemaTypes = [
   notFoundVisualSection,
   linktreePage,
   legalPage,
+  contactPage,
 ]

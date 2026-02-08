@@ -4,7 +4,35 @@ export const linktreePage = defineType({
   name: 'linktreePage',
   title: 'Linktree Page',
   type: 'document',
+  initialValue: {
+    seoTitle: 'Socials and Direct Links',
+    seoDescription:
+      "Explore Luiza Sabaini Costa's social channels, featured links, and direct contact shortcuts in one place.",
+    introText:
+      'A focused links page with my current social channels, featured work, and direct contact paths.',
+  },
   fields: [
+    defineField({
+      name: 'seoTitle',
+      title: 'SEO Title',
+      type: 'string',
+      description: 'Socials page title used in search and browser tabs.',
+    }),
+    defineField({
+      name: 'seoDescription',
+      title: 'SEO Description',
+      type: 'text',
+      rows: 3,
+      description: 'Socials page description used for search snippets and social previews.',
+    }),
+    defineField({
+      name: 'introText',
+      title: 'Intro Text',
+      type: 'text',
+      rows: 2,
+      description:
+        'Short supporting paragraph shown on the /socials page under the bio.',
+    }),
     defineField({
       name: 'name',
       title: 'Display Name',

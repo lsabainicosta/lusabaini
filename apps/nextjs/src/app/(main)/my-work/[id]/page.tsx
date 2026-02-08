@@ -1,37 +1,86 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import {
   getClientResultById,
   getClientResultBySlug,
   getClientResults,
+  resolveClientResultSlug,
 } from "@/lib/queries";
-import { createSlug } from "@/lib/utils";
 import TransitionLink from "@/components/motion/TransitionLink";
 import BackButton from "@/components/BackButton";
 import { ArrowRight } from "lucide-react";
 import SocialLinks from "@/components/SocialLinks";
 import RelatedContentGallery from "@/components/work/RelatedContentGallery";
 import Reveal from "@/components/motion/Reveal";
+import JsonLd from "@/components/seo/JsonLd";
+import { buildCanonicalUrl, buildPageMetadata } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ id: string }>;
 };
 
+async function getWorkResultByParam(id: string) {
+  let result = await getClientResultBySlug(id);
+  if (!result) {
+    result = await getClientResultById(id);
+  }
+  return result;
+}
+
 export async function generateStaticParams() {
   const results = await getClientResults();
   return results.map((result) => ({
-    id: result.clientName ? createSlug(result.clientName) : result._id,
+    id: resolveClientResultSlug(result),
   }));
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const result = await getWorkResultByParam(id);
+
+  const canonicalId = result ? resolveClientResultSlug(result) : id;
+
+  if (!result) {
+    return buildPageMetadata({
+      pathname: `/my-work/${id}`,
+      title: "Case Study Not Found",
+      description: "The requested case study could not be found.",
+      index: false,
+      follow: true,
+    });
+  }
+
+  const clientName = result.clientName?.trim() || "Case Study";
+  const metadataTitle =
+    result.seoTitle?.trim() || `${clientName} Case Study`;
+  const metadataDescription =
+    result.seoDescription?.trim() ||
+    result.description?.trim() ||
+    `Explore strategy and campaign outcomes for ${clientName}.`;
+
+  const openGraphImages = result.image?.url
+    ? [
+        {
+          url: result.image.url,
+          alt: result.image.alt || clientName,
+        },
+      ]
+    : undefined;
+
+  return buildPageMetadata({
+    pathname: `/my-work/${canonicalId}`,
+    title: metadataTitle,
+    description: metadataDescription,
+    openGraphType: "article",
+    openGraphImages,
+  });
 }
 
 export default async function WorkDetailPage({ params }: Props) {
   const { id } = await params;
 
-  // Try to find by slug first, then by _id
-  let result = await getClientResultBySlug(id);
-  if (!result) {
-    result = await getClientResultById(id);
-  }
+  const result = await getWorkResultByParam(id);
 
   if (!result) {
     notFound();
@@ -39,7 +88,7 @@ export default async function WorkDetailPage({ params }: Props) {
 
   // Get all results for navigation
   const allResults = await getClientResults();
-  const currentIndex = allResults.findIndex((r) => r._id === result!._id);
+  const currentIndex = allResults.findIndex((r) => r._id === result._id);
   const nextResult =
     currentIndex >= 0 && currentIndex < allResults.length - 1
       ? allResults[currentIndex + 1]
@@ -48,6 +97,8 @@ export default async function WorkDetailPage({ params }: Props) {
   const title = result.clientName || "Work";
   const description = result.description || "";
   const category = result.category || "";
+  const canonicalId = resolveClientResultSlug(result);
+  const canonicalUrl = buildCanonicalUrl(`/my-work/${canonicalId}`);
   const year = new Date().getFullYear().toString(); // Default to current year, can be updated later
   const curatedRelatedContent = (result.relatedContent ?? []).filter((item) => {
     if (item._type === "relatedTextItem") {
@@ -57,9 +108,29 @@ export default async function WorkDetailPage({ params }: Props) {
     const isVideo = item.mediaType === "video" || Boolean(item.video?.url);
     return isVideo ? Boolean(item.video?.url) : Boolean(item.image?.url);
   });
+  const creativeWorkSchema = {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    name: title,
+    description:
+      description || `Case study and social campaign outcomes for ${title}.`,
+    url: canonicalUrl,
+    creator: {
+      "@type": "Person",
+      name: "Luiza Sabaini Costa",
+      url: buildCanonicalUrl("/"),
+    },
+    ...(category ? { genre: category } : {}),
+    ...(result.image?.url
+      ? {
+          image: result.image.url,
+        }
+      : {}),
+  };
 
   return (
     <>
+      <JsonLd id="work-creativework-schema" data={creativeWorkSchema} />
       {/* Hero Section */}
       <section className="w-full pt-20 pb-8">
         <div className="max-w-6xl mx-auto px-6">
@@ -102,7 +173,7 @@ export default async function WorkDetailPage({ params }: Props) {
             {nextResult && (
               <Reveal className="absolute top-6 right-6 z-10" delay={0.08} y={12} amount={0.2}>
                 <TransitionLink
-                  href={`/my-work/${nextResult.clientName ? createSlug(nextResult.clientName) : nextResult._id}`}
+                  href={`/my-work/${resolveClientResultSlug(nextResult)}`}
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm text-black transition-opacity hover:opacity-80"
                   aria-label="Next project"
                 >

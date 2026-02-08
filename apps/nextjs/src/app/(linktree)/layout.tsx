@@ -1,16 +1,27 @@
 import type { Metadata, Viewport } from "next";
 import { getLinktreePageContent, getThemeSettings } from "@/lib/queries";
 import LinktreeShareButton from "@/components/linktree/LinktreeShareButton";
+import { buildPageMetadata } from "@/lib/seo";
 import "./linktree.css";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const theme = await getThemeSettings();
+  const [theme, content] = await Promise.all([
+    getThemeSettings(),
+    getLinktreePageContent(),
+  ]);
   const brandColor = theme?.brandColor || "#ff7edb";
+  const title = content?.seoTitle?.trim() || "Socials and Direct Links";
+  const description =
+    content?.seoDescription?.trim() ||
+    "Explore Luiza Sabaini Costa's social channels, featured links, and direct contact shortcuts in one place.";
+  const baseMetadata = buildPageMetadata({
+    pathname: "/socials",
+    title,
+    description,
+  });
 
   return {
-    title: "Links | Luiza Sabaini Costa",
-    description:
-      "Find all my links in one place - social media, contact, and more.",
+    ...baseMetadata,
     themeColor: [
       { color: brandColor },
       { color: brandColor, media: "(prefers-color-scheme: light)" },

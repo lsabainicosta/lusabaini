@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { EASE_OUT, FADE_IN_DELAY } from "@/components/motion/fade";
 import { useRouteTransition } from "@/components/motion/RouteTransitionContext";
-import { useContactModal } from "@/components/contact";
+import TransitionLink from "@/components/motion/TransitionLink";
 
 type Props = {
   headlineStart?: string;
@@ -23,7 +23,6 @@ export default function AboutCta({
   ctaButton,
 }: Props) {
   const { disableEnterAnimations } = useRouteTransition();
-  const { openModal } = useContactModal();
   const [disableEnterAnimationsAtMount] = React.useState(
     () => disableEnterAnimations,
   );
@@ -68,8 +67,8 @@ export default function AboutCta({
               {body}
             </p>
 
-            <Button type="button" onClick={openModal} className="mt-4">
-              {ctaLabel}
+            <Button asChild className="mt-4">
+              <TransitionLink href="/contact">{ctaLabel}</TransitionLink>
             </Button>
           </div>
         </motion.div>

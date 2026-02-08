@@ -7,7 +7,6 @@ import { motion } from "motion/react";
 import { useRouteTransition } from "@/components/motion/RouteTransitionContext";
 import TransitionLink from "@/components/motion/TransitionLink";
 import { EASE_OUT } from "@/components/motion/fade";
-import { useContactModal } from "@/components/contact";
 
 type Props = {
   headlineStart?: string;
@@ -88,7 +87,6 @@ const Hero = ({
 }: Props) => {
   const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
   const { disableEnterAnimations } = useRouteTransition();
-  const { openModal } = useContactModal();
   const [disableEnterAnimationsAtMount] = React.useState(
     () => disableEnterAnimations
   );
@@ -130,7 +128,7 @@ const Hero = ({
     description ||
     "I help brands grow on social through high-performing short-form video, strategy, and hands-on execution.";
   const primaryLabel = primaryCta?.label || "Get in touch";
-  const secondaryHref = secondaryCta?.href || "#work";
+  const secondaryHref = secondaryCta?.href || "/my-work";
   const secondaryLabel = secondaryCta?.label || "View my work";
 
   const shouldDisableMountAnimation =
@@ -145,14 +143,14 @@ const Hero = ({
         animate={shouldDisableMountAnimation ? undefined : "show"}
         variants={containerVariants}
       >
-        <motion.h2 
+        <motion.h1
           className="text-5xl lg:text-7xl font-medium tracking-[-0.04em] leading-[0.9] text-black"
           variants={itemVariants}
         >
           {titleStart} <br />
           actually <span className="italic font-serif">{titleEmphasis}</span>
           {titleEnd ? ` ${titleEnd}` : ""}
-        </motion.h2>
+        </motion.h1>
 
         <motion.p 
           className="text-xl text-black/60 max-w-md font-sans leading-relaxed"
@@ -165,8 +163,8 @@ const Hero = ({
           className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
           variants={itemVariants}
         >
-          <Button type="button" onClick={openModal}>
-            {primaryLabel}
+          <Button asChild>
+            <TransitionLink href="/contact">{primaryLabel}</TransitionLink>
           </Button>
           <Button asChild variant="outline">
             <TransitionLink href={secondaryHref}>

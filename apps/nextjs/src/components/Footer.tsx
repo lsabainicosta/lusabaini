@@ -5,7 +5,6 @@ import TransitionLink from "@/components/motion/TransitionLink";
 import { Button } from "@/components/ui/button";
 import { SocialIcon } from "@/components/SocialLinks";
 import { buildMailtoUrl } from "@/lib/utils";
-import { useContactModal } from "@/components/contact";
 
 type Props = {
   brandLabel?: string;
@@ -82,7 +81,6 @@ export default function Footer({
   cta,
 }: Props) {
   const currentYear = new Date().getFullYear();
-  const { openModal } = useContactModal();
   const socialData = (socials ?? [])
     .filter((s) => (s?.href ?? "").trim() && (s.href ?? "").trim() !== "#")
     .slice(0, 3);
@@ -136,8 +134,8 @@ export default function Footer({
 
             {/* Actions */}
             <div className="flex flex-col gap-8 lg:items-end">
-              <Button type="button" onClick={openModal}>
-                {ctaLabel}
+              <Button asChild>
+                <TransitionLink href="/contact">{ctaLabel}</TransitionLink>
               </Button>
 
               <nav className="flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium tracking-tight text-black/70">

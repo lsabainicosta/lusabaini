@@ -41,6 +41,21 @@ export const legalPage = defineType({
       description: 'Lower numbers appear first in footer legal links.',
     }),
     defineField({
+      name: 'seoTitle',
+      title: 'SEO Title',
+      type: 'string',
+      group: 'seo',
+      description: 'Optional page title override for search and browser tabs.',
+    }),
+    defineField({
+      name: 'seoDescription',
+      title: 'SEO Description',
+      type: 'text',
+      rows: 3,
+      group: 'seo',
+      description: 'Optional description override for search snippets and social previews.',
+    }),
+    defineField({
       name: 'badgeLabel',
       title: 'Badge label',
       type: 'string',

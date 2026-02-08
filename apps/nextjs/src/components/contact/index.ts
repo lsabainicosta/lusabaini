@@ -1,2 +1,1 @@
-export { ContactModal } from "./ContactModal";
-export { ContactModalProvider, useContactModal } from "./ContactModalContext";
+export { default as ContactForm } from "./ContactForm";

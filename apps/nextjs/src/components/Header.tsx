@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/Logo";
 import TransitionLink from "@/components/motion/TransitionLink";
-import { useContactModal } from "@/components/contact";
 
 type NavLink = { href: string; label: string };
 
@@ -22,7 +21,6 @@ const defaultNavLinks: NavLink[] = [
 
 const Header = ({ navLinks, cta }: Props) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { openModal } = useContactModal();
   const links = (navLinks?.length ? navLinks : defaultNavLinks).filter(
     (l) => l.href && l.label
   );
@@ -56,13 +54,8 @@ const Header = ({ navLinks, cta }: Props) => {
           </nav>
 
           <div className="flex items-center gap-4">
-            <Button
-              type="button"
-              size="sm"
-              onClick={openModal}
-              className="hidden sm:inline-flex"
-            >
-              {ctaLabel}
+            <Button size="sm" asChild className="hidden sm:inline-flex">
+              <TransitionLink href="/contact">{ctaLabel}</TransitionLink>
             </Button>
 
             {/* Framer-style Menu Icon */}
@@ -112,16 +105,10 @@ const Header = ({ navLinks, cta }: Props) => {
               {link.label}
             </TransitionLink>
           ))}
-          <Button
-            type="button"
-            size="lg"
-            onClick={() => {
-              setIsMenuOpen(false);
-              openModal();
-            }}
-            className="mt-4 w-full"
-          >
-            {ctaLabel}
+          <Button size="lg" asChild className="mt-4 w-full">
+            <TransitionLink href="/contact" onClick={() => setIsMenuOpen(false)}>
+              {ctaLabel}
+            </TransitionLink>
           </Button>
         </div>
       </div>

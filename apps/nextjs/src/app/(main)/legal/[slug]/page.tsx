@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import LegalPageView from "@/components/legal/LegalPageView";
 import { getLegalPageBySlug, getLegalPageSlugs } from "@/lib/queries";
+import { buildPageMetadata, isLegalSlugIndexable } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -17,21 +18,33 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const page = await getLegalPageBySlug(slug);
 
   if (!page) {
-    return {
-      title: "Legal Page | Lu Sabaini",
+    return buildPageMetadata({
+      pathname: `/legal/${slug}`,
+      title: "Legal Page",
       description: "Legal information page.",
-    };
+      index: false,
+      follow: true,
+    });
   }
 
-  const title = [page.headlineStart, page.headlineEmphasis, page.headlineEnd]
+  const derivedTitle = [page.headlineStart, page.headlineEmphasis, page.headlineEnd]
     .filter(Boolean)
     .join(" ")
     .trim();
+  const title = page.seoTitle?.trim() || derivedTitle || "Legal Page";
+  const description =
+    page.seoDescription?.trim() ||
+    page.description?.trim() ||
+    "Legal information page.";
+  const isIndexable = isLegalSlugIndexable(slug);
 
-  return {
-    title: title ? `${title} | Lu Sabaini` : "Legal Page | Lu Sabaini",
-    description: page.description?.trim() || "Legal information page.",
-  };
+  return buildPageMetadata({
+    pathname: `/legal/${slug}`,
+    title,
+    description,
+    index: isIndexable,
+    follow: true,
+  });
 }
 
 export default async function LegalPage({ params }: Props) {

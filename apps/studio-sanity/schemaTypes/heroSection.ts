@@ -5,6 +5,9 @@ export const heroSection = defineType({
   title: 'Hero',
   type: 'document',
   initialValue: {
+    seoTitle: 'Short-Form Content Strategy',
+    seoDescription:
+      'Short-form video, strategy, and hands-on execution to help brands grow on social. Portfolio, services, and client results by Luiza Sabaini Costa.',
     headlineStart: 'Short form content that',
     headlineEmphasis: 'performs',
     headlineEnd: '',
@@ -36,6 +39,19 @@ export const heroSection = defineType({
       title: 'Description',
       type: 'text',
       rows: 3,
+    }),
+    defineField({
+      name: 'seoTitle',
+      title: 'SEO Title',
+      type: 'string',
+      description: 'Homepage title used in search and browser tabs.',
+    }),
+    defineField({
+      name: 'seoDescription',
+      title: 'SEO Description',
+      type: 'text',
+      rows: 3,
+      description: 'Homepage description used for search snippets and social previews.',
     }),
     defineField({
       name: 'primaryCta',

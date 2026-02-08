@@ -39,6 +39,8 @@ export type StoryUserInfo = {
 };
 
 export type HeroSectionContent = {
+  seoTitle?: string;
+  seoDescription?: string;
   headlineStart?: string;
   headlineEmphasis?: string;
   headlineEnd?: string;
@@ -143,11 +145,15 @@ export type ClientResultStat = {
 
 export type ClientResult = {
   _id: string;
+  slug?: string;
+  updatedAt?: string;
   badgeLabel?: string;
   headlineStart?: string;
   headlineEmphasis?: string;
   headlineEnd?: string;
   description?: string;
+  seoTitle?: string;
+  seoDescription?: string;
   clientName?: string;
   category?: string;
   image?: ProfileImage;
@@ -187,11 +193,15 @@ export type ThemeSettings = {
 
 const clientResultFields = `{
   _id,
+  "slug": coalesce(slug.current, ""),
+  "updatedAt": _updatedAt,
   "badgeLabel": coalesce(badgeLabel, "Client results"),
   "headlineStart": coalesce(headlineStart, ""),
   "headlineEmphasis": coalesce(headlineEmphasis, ""),
   "headlineEnd": coalesce(headlineEnd, ""),
   "description": coalesce(description, ""),
+  "seoTitle": coalesce(seoTitle, ""),
+  "seoDescription": coalesce(seoDescription, ""),
   "clientName": coalesce(clientName, ""),
   "category": coalesce(category, ""),
   "image": {
@@ -252,25 +262,27 @@ const clientResultFields = `{
   }
 } `;
 
-const clientResultsBase = `*[_type == "clientResult"] | order(_updatedAt desc)`;
+const clientResultsBase = `*[_type == "clientResult"] | order(coalesce(order, 9999) asc, _updatedAt desc)`;
 
 const contentQuery = `
 {
   "theme": *[_type == "brandingSection" && _id == "brandingSection"][0]{
     "brandColor": coalesce(brandColorHex, "#f9f3eb"),
   },
-  "header": *[_type == "headerSettings" && _id == "headerSettings"][0]{
-    "navLinks": navLinks[]{
+  "header": *[_type == "navigationSection" && _id == "navigationSection"][0]{
+    "navLinks": mainNavigation[]{
       "label": coalesce(label, ""),
       "href": coalesce(href, ""),
       _key
     },
     "cta": {
-      "label": coalesce(cta.label, ""),
-      "href": coalesce(cta.href, "")
+      "label": coalesce(ctaButton.label, ""),
+      "href": coalesce(ctaButton.href, "")
     }
   },
   "hero": *[_type == "heroSection" && _id == "heroSection"][0]{
+    "seoTitle": coalesce(seoTitle, "Short-Form Content Strategy"),
+    "seoDescription": coalesce(seoDescription, "Short-form video, strategy, and hands-on execution to help brands grow on social. Portfolio, services, and client results by Luiza Sabaini Costa."),
     "headlineStart": coalesce(headlineStart, ""),
     "headlineEmphasis": coalesce(headlineEmphasis, ""),
     "headlineEnd": coalesce(headlineEnd, ""),
@@ -382,6 +394,8 @@ export async function getShellContent(): Promise<{
 const homeSectionsQuery = `
 {
   "hero": *[_type == "heroSection" && _id == "heroSection"][0]{
+    "seoTitle": coalesce(seoTitle, "Short-Form Content Strategy"),
+    "seoDescription": coalesce(seoDescription, "Short-form video, strategy, and hands-on execution to help brands grow on social. Portfolio, services, and client results by Luiza Sabaini Costa."),
     "headlineStart": coalesce(headlineStart, ""),
     "headlineEmphasis": coalesce(headlineEmphasis, ""),
     "headlineEnd": coalesce(headlineEnd, ""),
@@ -477,15 +491,40 @@ export async function getClientResultById(id: string): Promise<ClientResult | nu
   });
 }
 
+export function resolveClientResultSlug(
+  result: Pick<ClientResult, "_id" | "slug" | "clientName">
+): string {
+  const explicitSlug = result.slug?.trim().toLowerCase();
+  if (explicitSlug) return explicitSlug;
+
+  const nameSlug = result.clientName ? createSlug(result.clientName) : "";
+  return nameSlug || result._id;
+}
+
 export async function getClientResultBySlug(slug: string): Promise<ClientResult | null> {
-  // Fetch all results and match by slug on the client side
-  // This is simpler than trying to do complex string matching in GROQ
+  const sanitizedSlug = slug.replace(/[^a-zA-Z0-9-]/g, "").toLowerCase();
+  if (!sanitizedSlug) return null;
+
+  const directSlugQuery = `
+*[_type == "clientResult" && slug.current == "${sanitizedSlug}"][0]${clientResultFields}
+`;
+
+  const directSlugMatch = await cachedSanityFetch<ClientResult | null>(
+    directSlugQuery,
+    {
+      tags: ["client-results"],
+      revalidate: 12 * 60 * 60,
+    }
+  );
+
+  if (directSlugMatch) return directSlugMatch;
+
+  // Backward compatibility for older entries that don't have an explicit slug yet.
   const allResults = await getClientResults();
   
   return allResults.find((result) => {
-    if (!result.clientName) return false;
-    const resultSlug = createSlug(result.clientName);
-    return resultSlug === slug.toLowerCase();
+    const resultSlug = resolveClientResultSlug(result);
+    return resultSlug === sanitizedSlug;
   }) || null;
 }
 
@@ -513,6 +552,8 @@ export type AboutJourneyItem = {
 };
 
 export type AboutPageContent = {
+  seoTitle?: string;
+  seoDescription?: string;
   badgeLabel?: string;
   headlineStart?: string;
   headlineEmphasis?: string;
@@ -536,6 +577,8 @@ export type AboutPageContent = {
 const aboutPageQuery = `
 {
   "hero": *[_type == "aboutHeroSection" && _id == "aboutHeroSection"][0]{
+    "seoTitle": coalesce(seoTitle, "About"),
+    "seoDescription": coalesce(seoDescription, "Learn more about Luiza Sabaini Costa, her content philosophy, and the approach behind high-performing social media campaigns."),
     "badgeLabel": coalesce(badgeLabel, "About me"),
     "headlineStart": coalesce(headlineStart, ""),
     "headlineEmphasis": coalesce(headlineEmphasis, ""),
@@ -570,6 +613,8 @@ const aboutPageQuery = `
 export async function getAboutPageContent(): Promise<AboutPageContent | null> {
   const data = await cachedSanityFetch<{
     hero?: {
+      seoTitle?: string;
+      seoDescription?: string;
       badgeLabel?: string;
       headlineStart?: string;
       headlineEmphasis?: string;
@@ -602,6 +647,8 @@ export async function getAboutPageContent(): Promise<AboutPageContent | null> {
 
   // Flatten the nested structure to match the expected type
   return {
+    seoTitle: data.hero?.seoTitle,
+    seoDescription: data.hero?.seoDescription,
     badgeLabel: data.hero?.badgeLabel,
     headlineStart: data.hero?.headlineStart,
     headlineEmphasis: data.hero?.headlineEmphasis,
@@ -619,14 +666,26 @@ export async function getAboutPageContent(): Promise<AboutPageContent | null> {
 
 // My Work Page Types
 export type MyWorkPageContent = {
+  seoTitle?: string;
+  seoDescription?: string;
   badgeLabel?: string;
   headline?: string;
   description?: string;
 };
 
+export type ContactPageContent = {
+  seoTitle?: string;
+  seoDescription?: string;
+  headline?: string;
+  intro?: string;
+  supportingText?: string;
+};
+
 export type LegalPageContent = {
   _id: string;
   slug: string;
+  seoTitle?: string;
+  seoDescription?: string;
   badgeLabel?: string;
   headlineStart?: string;
   headlineEmphasis?: string;
@@ -636,8 +695,15 @@ export type LegalPageContent = {
   content?: string;
 };
 
+export type LegalPageSitemapEntry = {
+  slug: string;
+  updatedAt?: string;
+};
+
 const myWorkPageQuery = `
 *[_type == "myWorkPage" && _id == "myWorkPage"][0]{
+  "seoTitle": coalesce(seoTitle, "My Work"),
+  "seoDescription": coalesce(seoDescription, "Explore case studies, campaign outcomes, and short-form social media work delivered by Luiza Sabaini Costa."),
   "badgeLabel": coalesce(badgeLabel, "Partnerships"),
   "headline": coalesce(headline, "My best work"),
   "description": coalesce(description, "")
@@ -651,9 +717,28 @@ export async function getMyWorkPageContent(): Promise<MyWorkPageContent | null> 
   });
 }
 
+const contactPageQuery = `
+*[_type == "contactPage" && _id == "contactPage"][0]{
+  "seoTitle": coalesce(seoTitle, "Contact"),
+  "seoDescription": coalesce(seoDescription, "Reach out to Luiza Sabaini Costa for social media strategy, short-form content creation, and campaign collaborations."),
+  "headline": coalesce(headline, "Let's build your next growth campaign"),
+  "intro": coalesce(intro, "Share your goals, timeline, and what success looks like for your brand. You'll typically get a response within 1-2 business days."),
+  "supportingText": coalesce(supportingText, "Services include short-form video production, social strategy, performance-driven content systems, and creator-led campaign support.")
+}
+`;
+
+export async function getContactPageContent(): Promise<ContactPageContent | null> {
+  return cachedSanityFetch(contactPageQuery, {
+    tags: ["contact-page"],
+    revalidate: 12 * 60 * 60,
+  });
+}
+
 const legalPageFields = `{
   _id,
   "slug": coalesce(slug.current, ""),
+  "seoTitle": coalesce(seoTitle, ""),
+  "seoDescription": coalesce(seoDescription, ""),
   "badgeLabel": coalesce(badgeLabel, "Legal"),
   "headlineStart": coalesce(headlineStart, ""),
   "headlineEmphasis": coalesce(headlineEmphasis, ""),
@@ -686,6 +771,22 @@ export async function getLegalPageSlugs(): Promise<string[]> {
   });
 
   return (slugs ?? []).filter(Boolean);
+}
+
+export async function getLegalPageSitemapEntries(): Promise<LegalPageSitemapEntry[]> {
+  const query = `
+*[_type == "legalPage" && defined(slug.current)]{
+  "slug": slug.current,
+  "updatedAt": _updatedAt
+}
+`;
+
+  const entries = await cachedSanityFetch<LegalPageSitemapEntry[]>(query, {
+    tags: ["legal-pages"],
+    revalidate: 12 * 60 * 60,
+  });
+
+  return (entries ?? []).filter((entry) => Boolean(entry?.slug));
 }
 
 // Not Found Page Types
@@ -787,9 +888,12 @@ export type LinktreeLink = {
 };
 
 export type LinktreePageContent = {
+  seoTitle?: string;
+  seoDescription?: string;
   name?: string;
   username?: string;
   bio?: string;
+  introText?: string;
   profileImage?: {
     url: string;
     alt?: string;
@@ -802,6 +906,9 @@ export type LinktreePageContent = {
 const linktreePageQuery = `
 {
   "page": *[_type == "linktreePage" && _id == "linktreePage"][0]{
+    "seoTitle": coalesce(seoTitle, "Socials and Direct Links"),
+    "seoDescription": coalesce(seoDescription, "Explore Luiza Sabaini Costa's social channels, featured links, and direct contact shortcuts in one place."),
+    "introText": coalesce(introText, "A focused links page with my current social channels, featured work, and direct contact paths."),
     "name": coalesce(name, ""),
     "username": coalesce(username, ""),
     "bio": coalesce(bio, ""),
@@ -831,7 +938,11 @@ const linktreePageQuery = `
 export async function getLinktreePageContent(): Promise<LinktreePageContent | null> {
   const data = await cachedSanityFetch<{
     page?: {
+      seoTitle?: string;
+      seoDescription?: string;
+      introText?: string;
       name?: string;
+      username?: string;
       bio?: string;
       profileImage?: { url: string; alt?: string };
       links?: LinktreeLink[];

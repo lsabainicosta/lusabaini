@@ -13,6 +13,17 @@ export const clientResult = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'slug',
+      title: 'URL slug',
+      type: 'slug',
+      description:
+        'Used for the case-study URL (for example: /my-work/my-client). Keep this stable once published.',
+      options: {
+        source: 'clientName',
+        maxLength: 96,
+      },
+    }),
+    defineField({
       name: 'badgeLabel',
       title: 'Badge label',
       type: 'string',
@@ -45,6 +56,19 @@ export const clientResult = defineType({
       type: 'text',
       rows: 3,
       description: 'Short paragraph explaining the context and outcome.',
+    }),
+    defineField({
+      name: 'seoTitle',
+      title: 'SEO Title',
+      type: 'string',
+      description: 'Optional case-study page title override for search and browser tabs.',
+    }),
+    defineField({
+      name: 'seoDescription',
+      title: 'SEO Description',
+      type: 'text',
+      rows: 3,
+      description: 'Optional case-study page description override for search snippets and social previews.',
     }),
     defineField({
       name: 'clientName',
