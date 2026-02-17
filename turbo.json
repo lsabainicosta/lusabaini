@@ -8,7 +8,17 @@
     },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "dist/**", "out/**"]
+      "outputs": [".next/**", "dist/**", "out/**"],
+      "env": [
+        "REVALIDATE_SECRET",
+        "SMTP_HOST",
+        "SMTP_PORT",
+        "SMTP_SECURE",
+        "SMTP_USER",
+        "SMTP_PASS",
+        "SMTP_FROM",
+        "CONTACT_EMAIL"
+      ]
     },
     "lint": {
       "outputs": []
