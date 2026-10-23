@@ -89,11 +89,31 @@ export async function POST(request: Request) {
       `,
     });
 
+    // Personal sender, a plain-text part and a plain link (no "pay" button)
+    // keep this out of spam: a styled payment button from a new sender reads as phishing.
     await transporter.sendMail({
-      from: mailFrom,
+      from: { name: "Luiza Sabaini", address: process.env.SMTP_USER || toEmail },
       to: email,
       replyTo: toEmail,
       subject: `Seu pedido ${orderRef} — ${guide.title}`,
+      text: [
+        `Olá, ${name}!`,
+        "",
+        "Recebi o seu pedido. Aqui está o resumo:",
+        "",
+        `Pedido: ${orderRef}`,
+        `Guia: ${guide.title}`,
+        `Valor: ${price}`,
+        "",
+        `Se ainda não pagou, finalize o pagamento pelo PayPal e coloque o código ${orderRef} na mensagem: ${paypalUrl}`,
+        "",
+        "Assim que o pagamento for confirmado, o guia chega no seu e-mail em até 48 horas.",
+        "",
+        "Qualquer dúvida, é só responder este e-mail.",
+        "",
+        "Um abraço,",
+        "Luiza",
+      ].join("\n"),
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
           <h2 style="border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">Obrigada pelo seu pedido!</h2>
@@ -105,7 +125,7 @@ export async function POST(request: Request) {
             <tr><td style="padding: 4px 16px 4px 0; color: #666;">Valor</td><td>${price}</td></tr>
           </table>
           <p>Se ainda não pagou, finalize o pagamento pelo PayPal e coloque o código <strong>${orderRef}</strong> na mensagem:</p>
-          <p><a href="${paypalUrl}" style="display: inline-block; background: #111; color: #fff; padding: 12px 20px; border-radius: 999px; text-decoration: none;">Pagar ${price} com PayPal</a></p>
+          <p><a href="${paypalUrl}">${paypalUrl}</a></p>
           <p>Assim que o pagamento for confirmado, o guia chega no seu e-mail em até <strong>48 horas</strong>.</p>
           <p>Qualquer dúvida, é só responder este e-mail.</p>
           <p>Um abraço,<br />Luiza</p>
