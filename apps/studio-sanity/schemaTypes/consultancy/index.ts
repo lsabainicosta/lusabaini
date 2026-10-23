@@ -9,6 +9,7 @@ import {faqSection} from './faqSection'
 import {contactPage} from './contactPage'
 import {testimonial} from './testimonial'
 import {tourGuide} from './tourGuide'
+import {guideOrder} from './guideOrder'
 
 export const consultancySchemaTypes = [
   brandingSection,
@@ -22,6 +23,7 @@ export const consultancySchemaTypes = [
   contactPage,
   testimonial,
   tourGuide,
+  guideOrder,
 ]
 
 export const consultancySingletonTypes = new Set([

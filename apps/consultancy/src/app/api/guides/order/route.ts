@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { escapeHtml, mailFrom, transporter } from "@/lib/mail";
 import { formatEuro } from "@/lib/queries";
-import { sanityClient } from "@/lib/sanity";
+import { sanityClient, sanityWriteClient } from "@/lib/sanity";
 
 const orderSchema = z.object({
   guideId: z.string().min(1),
@@ -69,6 +69,24 @@ export async function POST(request: Request) {
     email: escapeHtml(email),
     title: escapeHtml(guide.title),
   };
+
+  // Best effort: the emails below are the source of truth if this fails.
+  try {
+    if (!sanityWriteClient) throw new Error("SANITY_WRITE_TOKEN is not set");
+    await sanityWriteClient.create({
+      _type: "guideOrder",
+      orderRef,
+      status: "pending",
+      name,
+      email,
+      guideTitle: guide.title,
+      guide: { _type: "reference", _ref: guideId, _weak: true },
+      price: guide.price,
+      createdAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Guide order save error:", error);
+  }
 
   try {
     await transporter.sendMail({

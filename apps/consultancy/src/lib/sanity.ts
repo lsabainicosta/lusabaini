@@ -17,6 +17,14 @@ export const sanityClient = createClient({
   perspective: process.env.SANITY_READ_TOKEN ? "previewDrafts" : "published",
 });
 
+// Server-only, needs an Editor token; used to record guide orders.
+export const sanityWriteClient = process.env.SANITY_WRITE_TOKEN
+  ? sanityClient.withConfig({
+      token: process.env.SANITY_WRITE_TOKEN,
+      perspective: "published",
+    })
+  : null;
+
 type CacheOptions = {
   tags?: string[];
   revalidate?: number;

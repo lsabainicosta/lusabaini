@@ -213,6 +213,13 @@ function consultancyStructure(S: StructureBuilder) {
       S.listItem()
         .title('Tour Guides')
         .child(S.documentTypeList('tourGuide').title('Tour Guides')),
+      S.listItem()
+        .title('Guide Orders')
+        .child(
+          S.documentTypeList('guideOrder')
+            .title('Guide Orders')
+            .defaultOrdering([{field: 'createdAt', direction: 'desc'}]),
+        ),
     ])
 }
 
