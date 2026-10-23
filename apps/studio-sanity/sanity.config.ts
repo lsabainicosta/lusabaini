@@ -210,6 +210,9 @@ function consultancyStructure(S: StructureBuilder) {
       S.listItem()
         .title('Testimonials')
         .child(S.documentTypeList('testimonial').title('Testimonials')),
+      S.listItem()
+        .title('Tour Guides')
+        .child(S.documentTypeList('tourGuide').title('Tour Guides')),
     ])
 }
 

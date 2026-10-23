@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
     "services-page",
     "about-page",
     "contact-page",
+    "guides",
   ];
 
   tagsToRevalidate.forEach((tag) => {

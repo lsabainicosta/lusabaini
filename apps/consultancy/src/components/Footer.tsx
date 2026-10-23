@@ -18,6 +18,7 @@ const defaultNavLinks: NavLink[] = [
   { label: "Início", href: "/" },
   { label: "Serviços", href: "/servicos" },
   { label: "Sobre", href: "/sobre" },
+  { label: "Guias", href: "/guias" },
 ];
 
 function formatHeadlineEnd(end?: string) {

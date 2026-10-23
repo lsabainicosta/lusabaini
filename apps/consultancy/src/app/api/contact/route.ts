@@ -1,20 +1,15 @@
 import { NextResponse } from "next/server";
-import nodemailer from "nodemailer";
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: process.env.SMTP_SECURE === "true",
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+import { escapeHtml, mailFrom, transporter } from "@/lib/mail";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { name, email, message } = body;
+    const safe = {
+      name: escapeHtml(String(name ?? "")),
+      email: escapeHtml(String(email ?? "")),
+      message: escapeHtml(String(message ?? "")),
+    };
 
     if (!name || !email || !message) {
       return NextResponse.json(
@@ -41,7 +36,7 @@ export async function POST(request: Request) {
     }
 
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || `"Consultoria Contato" <${process.env.SMTP_USER}>`,
+      from: mailFrom,
       to: toEmail,
       replyTo: email,
       subject: `Nova mensagem da consultoria — ${name}`,
@@ -52,18 +47,18 @@ export async function POST(request: Request) {
           </h2>
           <div style="margin: 20px 0;">
             <p style="margin: 8px 0; color: #666;"><strong>Nome:</strong></p>
-            <p style="margin: 8px 0; color: #333;">${name}</p>
+            <p style="margin: 8px 0; color: #333;">${safe.name}</p>
           </div>
           <div style="margin: 20px 0;">
             <p style="margin: 8px 0; color: #666;"><strong>E-mail:</strong></p>
             <p style="margin: 8px 0; color: #333;">
-              <a href="mailto:${email}" style="color: #0066cc;">${email}</a>
+              <a href="mailto:${safe.email}" style="color: #0066cc;">${safe.email}</a>
             </p>
           </div>
           <div style="margin: 20px 0;">
             <p style="margin: 8px 0; color: #666;"><strong>Mensagem:</strong></p>
             <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-top: 8px;">
-              <p style="margin: 0; color: #333; white-space: pre-wrap;">${message}</p>
+              <p style="margin: 0; color: #333; white-space: pre-wrap;">${safe.message}</p>
             </div>
           </div>
         </div>

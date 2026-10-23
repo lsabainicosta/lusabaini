@@ -311,3 +311,44 @@ export async function getContactPageContent() {
     revalidate: REVALIDATE,
   });
 }
+
+export type Guide = {
+  _id: string;
+  title: string;
+  slug: string;
+  description?: string;
+  coverImage?: SanityImage;
+  price: number;
+};
+
+const guidesQuery = `
+*[_type == "tourGuide" && available != false && defined(price)] | order(order asc){
+  _id,
+  title,
+  "slug": slug.current,
+  description,
+  "coverImage": select(
+    defined(coverImage.asset) => {
+      "url": coverImage.asset->url,
+      "alt": coverImage.alt
+    },
+    null
+  ),
+  price
+}
+`;
+
+export async function getGuides(): Promise<Guide[]> {
+  const data = await cachedSanityFetch<Guide[]>(guidesQuery, {
+    tags: ["guides"],
+    revalidate: REVALIDATE,
+  });
+  return data ?? [];
+}
+
+export function formatEuro(amount: number) {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "EUR",
+  }).format(amount);
+}

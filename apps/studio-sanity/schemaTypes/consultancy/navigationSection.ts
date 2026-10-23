@@ -9,6 +9,7 @@ export const navigationSection = defineType({
       {_type: 'navLink', href: '/', label: 'Início'},
       {_type: 'navLink', href: '/servicos', label: 'Serviços'},
       {_type: 'navLink', href: '/sobre', label: 'Sobre'},
+      {_type: 'navLink', href: '/guias', label: 'Guias'},
     ],
     ctaButton: {label: 'Agendar conversa', href: '/contato'},
   },

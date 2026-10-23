@@ -17,6 +17,7 @@ const defaultNavLinks: NavLink[] = [
   { href: "/", label: "Início" },
   { href: "/servicos", label: "Serviços" },
   { href: "/sobre", label: "Sobre" },
+  { href: "/guias", label: "Guias" },
 ];
 
 const Header = ({ navLinks, cta }: Props) => {

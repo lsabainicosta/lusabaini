@@ -11,7 +11,7 @@ import {
 import Reveal from "@lusabaini/ui/components/motion/Reveal";
 import TransitionLink from "@lusabaini/ui/components/motion/TransitionLink";
 import { ServiceIcon } from "@/components/ServiceIcon";
-import { getHomeContent } from "@/lib/queries";
+import { formatEuro, getGuides, getHomeContent } from "@/lib/queries";
 import { buildPageMetadata, SITE_DESCRIPTION, SITE_NAME } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -24,8 +24,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const { hero, services, process, about, faq, testimonials } =
-    await getHomeContent();
+  const [{ hero, services, process, about, faq, testimonials }, guides] =
+    await Promise.all([getHomeContent(), getGuides()]);
 
   const heroImageUrl = hero?.heroImage?.url || "/images/hero-netherlands.jpg";
   const isHeroImageLocal = !hero?.heroImage?.url;
@@ -117,6 +117,34 @@ export default async function HomePage() {
           </Button>
         </div>
       </section>
+
+      {/* Travel guides */}
+      {guides.length > 0 ? (
+        <section className="py-12 md:py-16">
+          <Reveal>
+            <h2 className="heading-2 text-foreground">Guias de viagem</h2>
+            <p className="mt-3 text-lead max-w-2xl">
+              Vai visitar a Holanda? Meus guias digitais reúnem os lugares que eu
+              mesma indico para quem vem passear.
+            </p>
+          </Reveal>
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {guides.map((guide, i) => (
+              <Reveal key={guide._id} delay={i * 0.05}>
+                <TransitionLink
+                  href={`/guias#${guide.slug}`}
+                  className="flex h-full items-center justify-between gap-4 rounded-2xl border border-black/10 bg-white/50 p-6 hover:bg-white/70 transition-colors"
+                >
+                  <h3 className="heading-3 text-foreground">{guide.title}</h3>
+                  <span className="shrink-0 text-sm font-medium text-foreground/60">
+                    {formatEuro(guide.price)}
+                  </span>
+                </TransitionLink>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {/* Process */}
       <section className="py-12 md:py-16">
