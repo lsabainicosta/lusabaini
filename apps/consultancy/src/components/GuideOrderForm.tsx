@@ -121,8 +121,8 @@ export default function GuideOrderForm({ guideId, priceLabel }: Props) {
       <Button type="submit" size="lg" disabled={isSubmitting} className="w-full">
         {isSubmitting ? "Enviando..." : `Comprar por ${priceLabel}`}
       </Button>
-      <p className="text-center text-xs text-foreground/50">
-        Você recebe o resumo do pedido e o link do PayPal no seu e-mail.
+      <p className="text-center text-xs text-foreground/50 text-balance">
+        Pagamento via PayPal · Guia em PDF no seu e-mail em até 48h
       </p>
     </form>
   );
