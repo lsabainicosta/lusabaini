@@ -41,6 +41,23 @@ export const contactPage = defineType({
       group: 'content',
     }),
     defineField({
+      name: 'autoReplyTopics',
+      title: 'Automatic reply: topics chosen',
+      type: 'text',
+      rows: 4,
+      group: 'content',
+      description:
+        'Sent when someone picks one or more topics. The chosen topics, the hourly rate and the booking link are added automatically.',
+    }),
+    defineField({
+      name: 'autoReplyOther',
+      title: 'Automatic reply: other subject',
+      type: 'text',
+      rows: 4,
+      group: 'content',
+      description: 'Sent when someone only picks "Outro assunto".',
+    }),
+    defineField({
       name: 'seoTitle',
       title: 'SEO Title',
       type: 'string',

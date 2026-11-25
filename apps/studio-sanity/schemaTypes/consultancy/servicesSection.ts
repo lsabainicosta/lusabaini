@@ -69,6 +69,27 @@ export const servicesSection = defineType({
       ],
     }),
     defineField({
+      name: 'hourlyRate',
+      title: 'Hourly rate (EUR, incl. VAT)',
+      type: 'number',
+      description: 'Shown on the services page and in the automatic reply. Default: 70.',
+      validation: (Rule) => Rule.min(0),
+    }),
+    defineField({
+      name: 'rateIncludes',
+      title: 'What the hourly rate includes',
+      type: 'text',
+      rows: 2,
+      description:
+        'Default: "Inclui a pesquisa prévia sobre o seu caso e um resumo por escrito com links depois da sessão."',
+    }),
+    defineField({
+      name: 'bookingUrl',
+      title: 'Free intro call booking link (Cal.com)',
+      type: 'url',
+      description: 'When empty, the "book a call" buttons link to the contact page instead.',
+    }),
+    defineField({
       name: 'seoTitle',
       title: 'SEO Title',
       type: 'string',

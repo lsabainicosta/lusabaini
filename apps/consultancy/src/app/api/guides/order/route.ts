@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { escapeHtml, mailFrom, transporter } from "@/lib/mail";
 import { formatEuro } from "@/lib/queries";
+import { isRateLimited } from "@/lib/rateLimit";
 import { sanityClient, sanityWriteClient } from "@/lib/sanity";
 
 const orderSchema = z.object({
@@ -11,22 +12,8 @@ const orderSchema = z.object({
   email: z.string().trim().email().max(200),
 });
 
-// ponytail: in-memory per-IP limit, fine for one container; resets on restart.
-const recentOrders = new Map<string, number[]>();
-const LIMIT = 5;
-const WINDOW_MS = 60 * 60 * 1000;
-
-function isRateLimited(ip: string) {
-  const now = Date.now();
-  const hits = (recentOrders.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-  hits.push(now);
-  recentOrders.set(ip, hits);
-  return hits.length > LIMIT;
-}
-
 export async function POST(request: Request) {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
-  if (isRateLimited(ip)) {
+  if (isRateLimited(request, "guide-order")) {
     return NextResponse.json(
       { error: "Muitos pedidos. Tente novamente mais tarde." },
       { status: 429 }

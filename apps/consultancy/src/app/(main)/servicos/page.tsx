@@ -3,7 +3,7 @@ import Reveal from "@lusabaini/ui/components/motion/Reveal";
 import { Button } from "@lusabaini/ui/components/button";
 import TransitionLink from "@lusabaini/ui/components/motion/TransitionLink";
 import { ServiceIcon } from "@/components/ServiceIcon";
-import { getServicesPageContent } from "@/lib/queries";
+import { formatEuro, getServicesPageContent } from "@/lib/queries";
 import { buildPageMetadata } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -40,6 +40,12 @@ export default async function ServicosPage() {
               </div>
               <h2 className="heading-3 text-foreground">{service.title}</h2>
               <p className="mt-3 text-body">{service.description}</p>
+              <TransitionLink
+                href={`/contato?tema=${encodeURIComponent(service.title)}`}
+                className="mt-5 inline-block text-sm font-medium text-foreground underline underline-offset-4 hover:no-underline"
+              >
+                Quero falar sobre isso
+              </TransitionLink>
             </article>
           </Reveal>
         ))}
@@ -48,17 +54,27 @@ export default async function ServicosPage() {
       <Reveal>
         <div className="mt-16 rounded-3xl border border-black/10 bg-white/60 px-6 py-10 md:px-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h2 className="heading-2 text-foreground">
-              Não sabe por onde começar?
+            <p className="text-sm font-medium text-muted-foreground">Consultoria online</p>
+            <h2 className="heading-2 mt-1 text-foreground">
+              {formatEuro(data?.hourlyRate ?? 70)} por hora
             </h2>
             <p className="mt-2 text-body max-w-lg">
-              Na conversa inicial a gente entende o seu momento e define o
-              melhor formato de apoio.
+              {data?.rateIncludes} Não sabe por onde começar? A conversa inicial
+              de 15 a 20 minutos é gratuita.
             </p>
           </div>
-          <Button asChild size="lg">
-            <TransitionLink href="/contato">Agendar conversa</TransitionLink>
-          </Button>
+          <div className="flex flex-col gap-3 sm:flex-row md:flex-col lg:flex-row">
+            {data?.bookingUrl ? (
+              <Button asChild size="lg">
+                <a href={data.bookingUrl} target="_blank" rel="noopener noreferrer">
+                  Agendar conversa gratuita
+                </a>
+              </Button>
+            ) : null}
+            <Button asChild size="lg" variant={data?.bookingUrl ? "outline" : "default"}>
+              <TransitionLink href="/contato">Enviar mensagem</TransitionLink>
+            </Button>
+          </div>
         </div>
       </Reveal>
     </div>

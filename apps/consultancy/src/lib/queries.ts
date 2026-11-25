@@ -221,13 +221,21 @@ export async function getHomeContent(): Promise<HomeContent> {
   };
 }
 
+const DEFAULT_RATE = 70;
+const DEFAULT_RATE_INCLUDES = JSON.stringify(
+  "Inclui a pesquisa prévia sobre o seu caso e um resumo por escrito com links depois da sessão."
+);
+
 const servicesPageQuery = `
 *[_type == "servicesSection" && _id == "servicesSection"][0]{
   seoTitle,
   seoDescription,
   headline,
   intro,
-  services[]{title, description, icon}
+  services[]{title, description, icon},
+  "hourlyRate": coalesce(hourlyRate, ${DEFAULT_RATE}),
+  "rateIncludes": coalesce(rateIncludes, ${DEFAULT_RATE_INCLUDES}),
+  bookingUrl
 }
 `;
 
@@ -238,6 +246,9 @@ export async function getServicesPageContent() {
     headline?: string;
     intro?: string;
     services?: ServiceItem[];
+    hourlyRate: number;
+    rateIncludes: string;
+    bookingUrl?: string;
   } | null>(servicesPageQuery, {
     tags: ["services-page"],
     revalidate: REVALIDATE,
@@ -310,6 +321,42 @@ export async function getContactPageContent() {
     tags: ["contact-page"],
     revalidate: REVALIDATE,
   });
+}
+
+// Everything the contact form and its automatic reply need, in one fetch.
+const contactOfferQuery = `
+{
+  "topics": *[_type == "servicesSection" && _id == "servicesSection"][0].services[].title,
+  "hourlyRate": coalesce(*[_type == "servicesSection" && _id == "servicesSection"][0].hourlyRate, ${DEFAULT_RATE}),
+  "rateIncludes": coalesce(*[_type == "servicesSection" && _id == "servicesSection"][0].rateIncludes, ${DEFAULT_RATE_INCLUDES}),
+  "bookingUrl": *[_type == "servicesSection" && _id == "servicesSection"][0].bookingUrl,
+  "autoReplyTopics": *[_type == "contactPage" && _id == "contactPage"][0].autoReplyTopics,
+  "autoReplyOther": *[_type == "contactPage" && _id == "contactPage"][0].autoReplyOther
+}
+`;
+
+export type ContactOffer = {
+  topics: string[];
+  hourlyRate: number;
+  rateIncludes: string;
+  bookingUrl: string | null;
+  autoReplyTopics: string | null;
+  autoReplyOther: string | null;
+};
+
+export async function getContactOffer(): Promise<ContactOffer> {
+  const data = await cachedSanityFetch<ContactOffer>(contactOfferQuery, {
+    tags: ["services-page", "contact-page"],
+    revalidate: REVALIDATE,
+  });
+  return {
+    topics: (data?.topics ?? []).filter(Boolean),
+    hourlyRate: data?.hourlyRate ?? DEFAULT_RATE,
+    rateIncludes: data?.rateIncludes ?? JSON.parse(DEFAULT_RATE_INCLUDES),
+    bookingUrl: data?.bookingUrl ?? null,
+    autoReplyTopics: data?.autoReplyTopics ?? null,
+    autoReplyOther: data?.autoReplyOther ?? null,
+  };
 }
 
 export type Guide = {
