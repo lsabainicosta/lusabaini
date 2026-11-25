@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { escapeHtml, mailFrom, transporter } from "@/lib/mail";
+import { emailLayout, escapeHtml, mailFrom, transporter } from "@/lib/mail";
 import { formatEuro } from "@/lib/queries";
 import { isRateLimited } from "@/lib/rateLimit";
 import { sanityClient, sanityWriteClient } from "@/lib/sanity";
@@ -81,17 +81,17 @@ export async function POST(request: Request) {
       to: toEmail,
       replyTo: email,
       subject: `Novo pedido de guia ${orderRef} — ${guide.title}`,
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-          <h2 style="border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">Novo pedido de guia</h2>
-          <p><strong>Pedido:</strong> ${orderRef}</p>
-          <p><strong>Guia:</strong> ${safe.title}</p>
-          <p><strong>Valor:</strong> ${price}</p>
-          <p><strong>Nome:</strong> ${safe.name}</p>
-          <p><strong>E-mail:</strong> <a href="mailto:${safe.email}">${safe.email}</a></p>
-          <p style="color: #666;">Confira o pagamento no PayPal e responda este e-mail com o guia em anexo.</p>
-        </div>
-      `,
+      html: await emailLayout(
+        "Novo pedido de guia",
+        `
+          <p style="margin: 0 0 8px;"><strong>Pedido:</strong> ${orderRef}</p>
+          <p style="margin: 0 0 8px;"><strong>Guia:</strong> ${safe.title}</p>
+          <p style="margin: 0 0 8px;"><strong>Valor:</strong> ${price}</p>
+          <p style="margin: 0 0 8px;"><strong>Nome:</strong> ${safe.name}</p>
+          <p style="margin: 0 0 16px;"><strong>E-mail:</strong> <a href="mailto:${safe.email}" style="color: #1a1a1a;">${safe.email}</a></p>
+          <p style="margin: 0; color: #6b6b6b; font-size: 13px;">Confira o pagamento no PayPal e responda este e-mail com o guia em anexo.</p>
+        `
+      ),
     });
 
     // Personal sender, a plain-text part and a plain link (no "pay" button)
@@ -119,23 +119,23 @@ export async function POST(request: Request) {
         "Um abraço,",
         "Luiza",
       ].join("\n"),
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-          <h2 style="border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">Obrigada pelo seu pedido!</h2>
-          <p>Olá, ${safe.name}!</p>
-          <p>Recebi o seu pedido. Aqui está o resumo:</p>
-          <table style="border-collapse: collapse; margin: 16px 0;">
-            <tr><td style="padding: 4px 16px 4px 0; color: #666;">Pedido</td><td><strong>${orderRef}</strong></td></tr>
-            <tr><td style="padding: 4px 16px 4px 0; color: #666;">Guia</td><td>${safe.title}</td></tr>
-            <tr><td style="padding: 4px 16px 4px 0; color: #666;">Valor</td><td>${price}</td></tr>
+      html: await emailLayout(
+        "Obrigada pelo seu pedido!",
+        `
+          <p style="margin: 0 0 16px;">Olá, ${safe.name}!</p>
+          <p style="margin: 0 0 16px;">Recebi o seu pedido. Aqui está o resumo:</p>
+          <table role="presentation" style="border-collapse: collapse; margin: 0 0 16px;">
+            <tr><td style="padding: 4px 16px 4px 0; color: #6b6b6b;">Pedido</td><td><strong>${orderRef}</strong></td></tr>
+            <tr><td style="padding: 4px 16px 4px 0; color: #6b6b6b;">Guia</td><td>${safe.title}</td></tr>
+            <tr><td style="padding: 4px 16px 4px 0; color: #6b6b6b;">Valor</td><td>${price}</td></tr>
           </table>
-          <p>Se ainda não pagou, finalize o pagamento pelo PayPal e coloque o código <strong>${orderRef}</strong> na mensagem:</p>
-          <p><a href="${paypalUrl}">${paypalUrl}</a></p>
-          <p>Assim que o pagamento for confirmado, o guia chega no seu e-mail em até <strong>48 horas</strong>.</p>
-          <p>Qualquer dúvida, é só responder este e-mail.</p>
-          <p>Um abraço,<br />Luiza</p>
-        </div>
-      `,
+          <p style="margin: 0 0 16px;">Se ainda não pagou, finalize o pagamento pelo PayPal e coloque o código <strong>${orderRef}</strong> na mensagem:</p>
+          <p style="margin: 0 0 16px;"><a href="${paypalUrl}" style="color: #1a1a1a;">${paypalUrl}</a></p>
+          <p style="margin: 0 0 16px;">Assim que o pagamento for confirmado, o guia chega no seu e-mail em até <strong>48 horas</strong>.</p>
+          <p style="margin: 0 0 16px;">Qualquer dúvida, é só responder este e-mail.</p>
+          <p style="margin: 0;">Um abraço,<br />Luiza</p>
+        `
+      ),
     });
   } catch (error) {
     console.error("Guide order email error:", error);

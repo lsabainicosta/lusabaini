@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { escapeHtml, mailFrom, transporter } from "@/lib/mail";
+import { emailLayout, escapeHtml, mailFrom, paragraphs, transporter } from "@/lib/mail";
 import { formatEuro, getContactOffer } from "@/lib/queries";
 import { isRateLimited } from "@/lib/rateLimit";
 
@@ -17,20 +17,6 @@ const DEFAULT_REPLY_TOPICS =
   "Obrigada pela sua mensagem! Vou analisar o seu caso e respondo pessoalmente em até 2 dias úteis com uma sugestão de quantas horas fazem sentido para você.";
 const DEFAULT_REPLY_OTHER =
   "Obrigada pela sua mensagem! Vou ler com calma e respondo pessoalmente em até 2 dias úteis.";
-
-// Plain paragraphs -> text part + simple HTML part, with bare URLs turned into links.
-function renderMail(paragraphs: string[]) {
-  const text = paragraphs.join("\n\n");
-  const html = `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">${paragraphs
-    .map(
-      (p) =>
-        `<p>${escapeHtml(p)
-          .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1">$1</a>')
-          .replace(/\n/g, "<br />")}</p>`
-    )
-    .join("")}</div>`;
-  return { text, html };
-}
 
 export async function POST(request: Request) {
   if (isRateLimited(request, "contact")) {
@@ -87,21 +73,20 @@ export async function POST(request: Request) {
       to: toEmail,
       replyTo: email,
       subject: `Nova mensagem ${subjectTag}— ${name}`,
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-          <h2 style="border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">Nova mensagem — Consultoria Holanda</h2>
-          <p><strong>Nome:</strong> ${safe.name}</p>
-          <p><strong>E-mail:</strong> <a href="mailto:${safe.email}">${safe.email}</a></p>
-          <p><strong>Temas:</strong> ${safe.labels}</p>
-          <p><strong>Mensagem:</strong></p>
-          <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; white-space: pre-wrap;">${safe.message}</div>
-          <p style="color: #666;">${
+      html: await emailLayout(
+        "Nova mensagem pelo site",
+        `
+          <p style="margin: 0 0 8px;"><strong>Nome:</strong> ${safe.name}</p>
+          <p style="margin: 0 0 8px;"><strong>E-mail:</strong> <a href="mailto:${safe.email}" style="color: #1a1a1a;">${safe.email}</a></p>
+          <p style="margin: 0 0 16px;"><strong>Temas:</strong> ${safe.labels}</p>
+          <div style="background: #f7f5f2; padding: 16px; border-radius: 12px; white-space: pre-wrap;">${safe.message}</div>
+          <p style="margin: 16px 0 0; color: #6b6b6b; font-size: 13px;">${
             topics.length
               ? "A pessoa recebeu uma resposta automática com os temas, o valor por hora e o link da conversa gratuita."
               : "A pessoa recebeu uma resposta automática dizendo que você responde pessoalmente."
           }</p>
-        </div>
-      `,
+        `
+      ),
     });
   } catch (error) {
     console.error("Contact form error:", error);
@@ -113,7 +98,7 @@ export async function POST(request: Request) {
 
   // Luiza already has the message, so a failed auto-reply is only logged.
   try {
-    const paragraphs = topics.length
+    const reply = topics.length
       ? [
           `Olá, ${name}!`,
           offer.autoReplyTopics || DEFAULT_REPLY_TOPICS,
@@ -133,12 +118,14 @@ export async function POST(request: Request) {
           "Um abraço,\nLuiza",
         ];
 
+    const { text, html } = paragraphs(reply);
     await transporter.sendMail({
       from: { name: "Luiza Sabaini", address: process.env.SMTP_USER || toEmail },
       to: email,
       replyTo: toEmail,
       subject: "Recebi a sua mensagem",
-      ...renderMail(paragraphs),
+      text,
+      html: await emailLayout("Obrigada pela sua mensagem!", html),
     });
   } catch (error) {
     console.error("Contact auto-reply error:", error);
